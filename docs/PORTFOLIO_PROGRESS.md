@@ -281,13 +281,18 @@ Kategori:
 - Data & API
 - Practice & Tools
 
-Setiap skill berisi:
+Setiap skill ditampilkan sebagai kartu specimen berisi:
 
 - Logo teknologi.
 - Nama skill.
 - Status `ACTIVE`.
 - Konteks project atau penggunaan.
-- Hover state dengan perubahan warna dan elevasi.
+- Logo teknologi.
+- Nama skill.
+- Kategori.
+- Konteks pemakaian.
+- Hover elevation dan perubahan warna.
+- Fallback inisial dua huruf jika logo gagal dimuat.
 
 Logo skill menggunakan Simple Icons CDN:
 
