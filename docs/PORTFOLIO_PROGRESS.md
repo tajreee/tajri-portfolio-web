@@ -45,7 +45,7 @@ npm run preview
 - Vite
 - CSS native
 - `@phosphor-icons/react` untuk ikon sosial
-- `motion` dan `@react-three/fiber` masih tersedia dari prototype sebelumnya, tetapi Hero saat ini menggunakan pendekatan CSS/HTML portrait dan marquee
+- `motion/react` (Framer Motion) untuk transisi interaktif; `@react-three/fiber` belum digunakan
 
 ## Arah Visual
 
@@ -110,7 +110,7 @@ public/assets/about-portrait-explainer.jpg
 public/assets/about-portrait-observer.jpg
 ```
 
-About Me berganti otomatis setiap tiga detik secara looping. Selector manual tetap tersedia sebagai kontrol tambahan.
+About Me berganti otomatis setiap tiga detik saat terlihat dan tab browser aktif. Hover, fokus, atau pemilihan manual menjedakan slideshow sampai tombol Play ditekan. Autoplay dinonaktifkan saat reduced motion aktif.
 
 ## Education Section
 
@@ -461,14 +461,22 @@ Pembagian tanggung jawab:
 - Tambahkan asset project jika tersedia.
 - Pertimbangkan self-hosting font untuk production.
 - Pertimbangkan lazy-loading logo skill eksternal atau menggantinya dengan asset lokal.
-- Audit keyboard navigation pada carousel dan modal.
-- Tambahkan focus trap pada popup signature dan project detail.
-- Tambahkan Escape key untuk menutup modal.
-- Tambahkan test visual desktop dan mobile.
+- Tambahkan automated test suite permanen untuk interaksi dan regresi visual.
 - Jalankan Lighthouse setelah konten dan asset final tersedia.
 - Pertimbangkan lazy-loading library yang tidak digunakan untuk mengurangi dependency bundle.
 
 ## Verifikasi Terakhir
+
+Integrasi motion mempertahankan visual paper archive dan menggunakan dependency `motion` yang sudah tersedia, tanpa menambah dependency aplikasi.
+
+- Hero: portrait masuk seperti lembar yang ditempel, disusul tape dan nama; marquee memiliki kontrol jeda dan berhenti saat di luar viewport.
+- About: crossfade portrait, selector keyboard dengan Arrow/Home/End, serta kontrol Play/Pause.
+- Skills: indikator filter bergerak dan transisi posisi kelompok; nomor kategori tetap konsisten saat difilter.
+- Modal project dan signature: `AnimatedDialog` memakai portal dan native `<dialog>`, transisi masuk/keluar, Escape, focus containment, focus restoration, dan scroll lock.
+- `MotionConfig` dan autoplay mengikuti perubahan preferensi reduced motion tanpa reload.
+- Override responsif ditempatkan setelah aturan desktop agar layout mobile tidak tertimpa.
+
+Browser check menggunakan Edge headless pada 1440 px, 820 px, 390 px, dan 320 px: filter, kontrol keyboard, modal, signature canvas, form persistence, reduced motion, dan horizontal overflow.
 
 Perintah yang digunakan:
 
