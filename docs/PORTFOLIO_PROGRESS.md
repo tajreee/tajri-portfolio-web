@@ -9,10 +9,12 @@ Prototype frontend sudah berjalan dan build production berhasil.
 Section yang sudah tersedia:
 
 1. Hero
-2. Education
-3. Selected Work / Projects
-4. Skills
-5. Contact
+2. About Me
+3. Education
+4. Professional Experience
+5. Selected Work / Projects
+6. Skills
+7. Contact
 
 Section lain belum dibuat dan dapat dilanjutkan pada sesi berikutnya.
 
@@ -100,6 +102,16 @@ Asset Hero:
 public/assets/tajri-portrait.jpg
 ```
 
+About portrait assets:
+
+```text
+public/assets/about-portrait-builder.jpg
+public/assets/about-portrait-explainer.jpg
+public/assets/about-portrait-observer.jpg
+```
+
+About Me berganti otomatis setiap tiga detik secara looping. Selector manual tetap tersedia sebagai kontrol tambahan.
+
 ## Education Section
 
 Education dibuat seperti lembar academic record yang ditempel di wall board.
@@ -133,6 +145,46 @@ Keputusan layout:
 - Logo dibuat besar dan dipusatkan secara vertikal terhadap area judul.
 - Degree stamp `S.Kom. / Cum Laude` dipusatkan dalam kolom tersendiri dan digeser sedikit ke kiri untuk keseimbangan visual.
 - Pada mobile, layout berubah menjadi satu kolom.
+
+## Professional Experience Section
+
+Professional Experience ditempatkan setelah Education dan sebelum Selected Work.
+
+Komponen:
+
+```text
+src/components/experience/ExperienceSection.tsx
+```
+
+Konsep visualnya adalah timeline work log dengan kartu landscape bergaya lembar arsip.
+
+Konten saat ini:
+
+- Full Stack Developer Intern.
+- PT Indi Teknokreasi Internasional / INDI Technology.
+- Jakarta, Indonesia.
+- Agu—Des 2025.
+- 20 pekan.
+- 770 jam kerja.
+- Evaluasi internship 96,3 / 100.
+- 40+ REST endpoints.
+- 3 client projects.
+- 2 released services.
+
+Bullet kontribusi:
+
+- 40+ endpoint REST dengan Go dan Django, skema PostgreSQL, dan dua layanan production.
+- Backend minigame loyalitas energi dengan 10+ endpoint Go, tiga API partner, dan leaderboard harian serta mingguan.
+- 25+ endpoint sistem penilaian kinerja dengan 11 peran, access rules berlapis, dan data locking setelah finalisasi.
+- Swagger/OpenAPI, Prometheus, Grafana, UAT, dan end-to-end testing hingga MVP.
+
+Asset:
+
+```text
+public/assets/logo-inditech.png
+```
+
+Struktur data pengalaman dibuat sebagai array agar pengalaman profesional berikutnya dapat ditambahkan sebagai entry timeline baru tanpa mengubah struktur komponen.
 
 ## Selected Work Section
 
@@ -351,17 +403,50 @@ public/
 
 Asset project bersifat opsional karena placeholder sudah tersedia.
 
-## File Utama
+## Struktur Komponen
 
 ```text
-src/App.tsx
-src/styles.css
-src/main.tsx
+src/
+├── App.tsx
+├── main.tsx
+├── styles.css
+├── types/
+│   └── portfolio.ts
+├── data/
+│   ├── portfolio.ts
+│   ├── projects.ts
+│   └── skills.ts
+└── components/
+    ├── common/
+    │   └── Marquee.tsx
+    ├── hero/
+    │   └── HeroSection.tsx
+    ├── about/
+    │   └── AboutSection.tsx
+    ├── education/
+    │   └── EducationSection.tsx
+    ├── projects/
+    │   └── SelectedWorkSection.tsx
+    ├── skills/
+    │   └── SkillsSection.tsx
+    └── contact/
+        └── ContactSection.tsx
+
 public/assets/
 package.json
 ```
 
-Saat ini mayoritas komponen masih berada dalam `src/App.tsx` karena proyek masih berada pada fase eksplorasi visual per section. Refactor menjadi komponen terpisah dapat dilakukan setelah struktur dan desain final disetujui.
+`App.tsx` sekarang berfungsi sebagai composition root dan hanya menyusun section utama. Data portfolio dipisahkan ke `src/data`, sedangkan domain type berada di `src/types`.
+
+Pembagian tanggung jawab:
+
+- `HeroSection`: poster hero, portrait, social links, dan marquee.
+- `AboutSection`: tiga gaya portrait yang dapat dipilih, portrait fallback, dan content landscape About Me.
+- `EducationSection`: academic record dan wall clipping.
+- `SelectedWorkSection`: carousel project, project image fallback, popup detail, dan stack marks.
+- `SkillsSection`: filter kategori, skill cards, dan logo fallback.
+- `ContactSection`: letter form, validasi lokal, mailto, dan signature canvas modal.
+- `Marquee`: helper visual yang digunakan oleh Hero.
 
 ## Catatan Teknis dan Pekerjaan Berikutnya
 
