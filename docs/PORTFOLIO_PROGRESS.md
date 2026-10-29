@@ -303,7 +303,7 @@ Jika asset tidak ditemukan, placeholder otomatis menampilkan nomor dan nama proj
 
 ## Skills Section
 
-Skills dibuat sebagai **technical specimen wall** dengan background warm paper yang konsisten dengan Hero dan Experience.
+Skills dibuat sebagai **floating paper field**: logo berada pada potongan kertas sobek kecil yang melayang vertikal di atas kanvas hijau tinta Studio Cetak, menggantikan kartu kotak.
 
 Kategori:
 
@@ -312,25 +312,27 @@ Kategori:
 - Data & API
 - Practice & Tools
 
-Setiap skill ditampilkan sebagai kartu specimen berisi:
+Setiap potongan kertas berisi:
 
-- Logo teknologi.
-- Nama skill.
-- Status `ACTIVE`.
-- Konteks project atau penggunaan.
-- Kategori.
-- Hover elevation dan perubahan warna.
+- Logo teknologi dan nama skill terlihat tanpa hover; warna kertas, kemiringan, jarak, dan fase gerak dibuat bervariasi secara deterministik.
+- Konteks project serta kategori muncul saat hover, fokus, atau kertas ditahan. Pada layar kecil, perangkat tanpa hover, dan reduced motion, konteks selalu terlihat.
+- Hover/fokus menjedakan animasi pada posisi saat itu, tanpa mengembalikan transform ke posisi awal.
+- Klik, tap, atau Enter menahan/melepas kertas melalui toggle yang mendukung `aria-pressed`.
 - Fallback inisial dua huruf jika logo gagal dimuat.
+
+Gerakan memakai CSS transform dan `animation-play-state`, sedangkan Motion menangani fade/layout saat filter berubah. Loop dijeda per kertas ketika di luar/menjauh dari viewport, saat tab browser tidak aktif, atau melalui kontrol Pause/Resume motion. Reduced motion menonaktifkan loop dan perpindahan layout. Hover tidak memperbesar dimensi kertas.
+
+Hamparan memakai layout auto-height dengan 5 kolom desktop, 4/3 kolom tablet, dan 2 kolom di layar sempit. Namespace `press-skill-*` terpisah dari CSS specimen/orbit lama agar tidak menghidupkan kembali aturan legacy.
 
 Logo skill menggunakan Simple Icons CDN:
 
 ```text
-https://cdn.simpleicons.org/{icon-name}/55564f
+https://cdn.simpleicons.org/{icon-name}/253b30
 ```
 
 Jika logo gagal dimuat, fallback otomatis menggunakan dua huruf awal nama skill.
 
-Filter kategori tersedia pada bagian atas section.
+Filter kategori dan pengumuman jumlah hasil tetap tersedia: ALL menampilkan 20 kertas, masing-masing kategori menampilkan lima. Logo dimuat secara lazy dengan ukuran tetap.
 
 ## Contact Section
 
@@ -469,7 +471,8 @@ src/
     ├── projects/
     │   └── SelectedWorkSection.tsx
     ├── skills/
-    │   └── SkillsSection.tsx
+    │   ├── SkillsSection.tsx
+    │   └── skills-paper.css
     └── contact/
         └── ContactSection.tsx
 
@@ -488,7 +491,7 @@ Pembagian tanggung jawab:
 - `EducationSection`: academic record dan wall clipping.
 - `ExperienceSection`: work-log timeline, record internship, dan evaluasi.
 - `SelectedWorkSection`: carousel project, project image fallback, popup detail, dan stack marks.
-- `SkillsSection`: filter kategori, skill cards, dan logo fallback.
+- `SkillsSection`: filter kategori, kertas skill melayang, kontrol pause/hold, dan logo fallback.
 - `ContactSection`: letter form, validasi lokal, mailto, dan signature canvas modal.
 - `Marquee`: helper visual yang digunakan oleh Hero.
 - `AnimatedDialog`: portal/native dialog, transisi, scroll lock, dan pemulihan fokus.
@@ -500,12 +503,16 @@ Pembagian tanggung jawab:
 - Pastikan link Instagram dan GitHub diganti dengan URL asli.
 - Tambahkan foto Hero, tiga portrait About, dan asset project jika tersedia.
 - Pertimbangkan self-hosting font untuk production.
-- Pertimbangkan lazy-loading logo skill eksternal atau menggantinya dengan asset lokal.
+- Pertimbangkan mengganti logo skill eksternal dengan asset lokal untuk mengurangi ketergantungan CDN.
 - Tambahkan automated test suite permanen untuk interaksi dan regresi visual.
 - Jalankan Lighthouse setelah konten dan asset final tersedia.
 - Pertimbangkan lazy-loading library yang tidak digunakan untuk mengurangi dependency bundle.
 
 ## Verifikasi Terakhir
+
+### Kertas Skill Melayang
+
+Pemeriksaan Edge headless pada 1440, 820, 744, 390, dan 320 px mencakup gerak vertikal nyata, freeze/resume clock tanpa reset saat hover/fokus, hold melalui keyboard/touch, pause global yang bertahan saat filter berubah, penghentian saat tab tersembunyi/offscreen, live reduced motion, fallback logo, 20/lima hasil filter, keunikan ID, serta kertas yang tidak saling bertumpuk atau memicu horizontal overflow. Navbar/footer dan navigasi anchor tetap diperiksa terpisah.
 
 ### Navbar dan Footer
 
@@ -518,7 +525,7 @@ Pemeriksaan browser mencakup desktop 1440 px, mobile 390 px, narrow/reduced-moti
 - Academic record bergeser ke papan; cap gelar dan evaluasi menekan saat cap itu sendiri terlihat. Observer menargetkan header/cap pendek agar tetap bekerja pada dokumen mobile yang tinggi.
 - Timeline pengalaman terisi berdasarkan posisi scroll tanpa mengubah ukuran dot atau label NOW.
 - Tali proyek terbentang, lalu lembar case file menetap. Ayunan spring merespons scroll, drag, dan tombol carousel. State kedatangan disinkronkan antar-copy agar loop tidak memutar ulang entrance; hanya lembar di sekitar viewport yang mengikuti sway.
-- Specimen skill masuk berurutan singkat dan terangkat saat diinspeksi. Filter dan modal mempertahankan transisi keluar-masuk.
+- Kertas skill melayang vertikal dengan fase berbeda dan diam saat hover/fokus. Filter dan modal mempertahankan transisi keluar-masuk.
 - Surat kontak diletakkan sekali dan garis pembatas tergambar. Fokus pertama langsung menyelesaikan gerakan surat; isi form dan canvas tidak dianimasikan saat digunakan.
 - Reduced motion punya fallback CSS selain pengaturan Motion, sehingga transform berbasis MotionValue juga langsung dinetralkan saat preferensi sistem berubah.
 
@@ -528,7 +535,7 @@ Integrasi motion mempertahankan visual paper archive dan menggunakan dependency 
 
 - Hero: portrait masuk seperti lembar yang ditempel, disusul tape dan nama; marquee memiliki kontrol jeda dan berhenti saat di luar viewport.
 - About: crossfade portrait, selector keyboard dengan Arrow/Home/End, serta kontrol Play/Pause.
-- Skills: indikator filter bergerak dan transisi posisi kelompok; nomor kategori tetap konsisten saat difilter.
+- Skills: indikator filter bergerak, transisi posisi kertas, pause/resume tanpa reset, serta konteks pemakaian untuk hover, keyboard, dan touch.
 - Modal project dan signature: `AnimatedDialog` memakai portal dan native `<dialog>`, transisi masuk/keluar, Escape, focus containment, focus restoration, dan scroll lock.
 - `MotionConfig` dan autoplay mengikuti perubahan preferensi reduced motion tanpa reload.
 - Override responsif ditempatkan setelah aturan desktop agar layout mobile tidak tertimpa.
