@@ -1,0 +1,728 @@
+/* Optional print-studio skin. The v1.1.0 layout and motion remain in styles.css. */
+:root {
+  --press-paper: #f4eddd;
+  --press-stock: #e7dbc0;
+  --press-ink: #253b30;
+  --press-rust: #924c35;
+  --press-olive: #a7ad87;
+  --press-sage: #dce0c9;
+  --press-gold: #e3c484;
+  --press-muted: #685e49;
+  --press-rule: #b4a789;
+  --press-focus: #924c35;
+  --press-register: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240' fill='none' stroke='%238a9274' stroke-width='1'%3E%3Ccircle cx='120' cy='120' r='82'/%3E%3Ccircle cx='120' cy='120' r='60'/%3E%3Ccircle cx='120' cy='120' r='10'/%3E%3Cpath d='M120 0v240M0 120h240M0 0h20M0 0v20M240 0h-20M240 0v20M0 240h20M0 240v-20M240 240h-20M240 240v-20'/%3E%3C/svg%3E");
+  background: #d6cbb5;
+  color: var(--press-ink);
+}
+
+body,
+.hero-page {
+  background: #d6cbb5;
+}
+
+::selection {
+  background: var(--press-gold);
+  color: var(--press-ink);
+}
+
+:where(a, button, input, textarea, [tabindex]):focus-visible {
+  outline-color: var(--press-focus);
+}
+
+.reading-progress {
+  background: var(--press-rust);
+}
+
+.paper-grain,
+.about-grain,
+.education-grain,
+.experience-grain,
+.work-grain,
+.skills-grain,
+.contact-grain {
+  opacity: 0.045;
+}
+
+.hero-poster::before,
+.hero-poster::after,
+.about-section::before,
+.about-section::after,
+.education-section::before,
+.education-section::after,
+.experience-section::before,
+.work-section::before,
+.work-section::after,
+.skills-section::before,
+.skills-section::after,
+.contact-section::before,
+.contact-section::after {
+  pointer-events: none;
+}
+
+/* A proof sheet: registration marks, olive ink, and a rust halftone plate. */
+.hero-poster {
+  background: var(--press-paper);
+  border-color: #b4a78a;
+  box-shadow: 0 16px 40px rgb(55 46 29 / 12%);
+}
+
+.hero-poster::before {
+  inset: 14px;
+  background:
+    var(--press-register) left top / 18px 18px no-repeat,
+    var(--press-register) right bottom / 18px 18px no-repeat;
+  border-block: 1px solid rgb(102 84 54 / 16%);
+}
+
+.hero-poster::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 13%;
+  right: 7%;
+  width: min(58vw, 760px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #9a573c 0.9px, transparent 1px) 0 0 / 6px
+    6px;
+  opacity: 0.25;
+}
+
+.torn-edge {
+  background: #d6cbb5;
+}
+
+.corner-label,
+.hero-caption,
+.hero-note,
+.hero-corner small,
+.hero-scroll-cue {
+  color: #675c46;
+}
+
+.hero-corner strong,
+.hero-name,
+.marquee-layer {
+  color: var(--press-ink);
+}
+
+.hero-name span:last-child,
+.marquee i {
+  color: var(--press-rust);
+}
+
+.social-links a {
+  color: var(--press-ink);
+  border-color: #8c8d6d;
+}
+
+.social-links a:hover {
+  background: var(--press-ink);
+  color: var(--press-paper);
+}
+
+.portrait-missing {
+  color: #f6efd9;
+  background-color: #354c3b;
+  background-image: linear-gradient(148deg, #75815c 0 42%, #354c3b 42% 100%);
+}
+
+.portrait-missing strong {
+  font-size: clamp(8rem, 15vw, 12rem);
+}
+
+.portrait-tape {
+  background: rgb(223 189 112 / 80%);
+}
+
+.portrait-shadow {
+  background: rgb(58 62 37 / 20%);
+}
+
+/* The darker pinboard gives the profile its own pause in the scroll. */
+.about-section {
+  --press-focus: #e3c484;
+  background: var(--press-ink);
+  color: var(--press-paper);
+}
+
+.about-section::before {
+  background: var(--press-register) -230px 85% / 650px 650px no-repeat;
+  opacity: 0.25;
+}
+
+.about-section::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 14px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 71px,
+    rgb(239 229 203 / 36%) 71px 72px
+  );
+  border-top: 1px solid rgb(239 229 203 / 25%);
+}
+
+.about-heading,
+.portrait-switcher button,
+.portrait-playback {
+  color: #e3dcc6;
+}
+
+.about-heading-line {
+  background: #79866c;
+}
+
+.portrait-switcher button {
+  border-color: #788367;
+}
+
+.portrait-switcher button span,
+.portrait-switcher button.is-active,
+.portrait-switcher button.is-active span {
+  color: var(--press-gold);
+}
+
+.portrait-switcher button:hover {
+  color: #fff7e0;
+}
+
+.about-portrait-board {
+  --press-focus: #253b30;
+  background: #b5af8f;
+  box-shadow: 10px 18px 28px rgb(10 24 16 / 25%);
+}
+
+.about-portrait-board::before {
+  background: #8e9872;
+}
+
+.about-portrait-missing {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0 6px,
+      rgb(64 77 46 / 15%) 6px 7px
+    ),
+    #d4d2ac;
+  color: #465438;
+}
+
+.about-portrait-caption {
+  color: #35402e;
+}
+
+.about-content-paper,
+.education-paper,
+.experience-paper,
+.sheet-paper,
+.letter-paper {
+  background-color: var(--press-paper);
+  color: var(--press-ink);
+}
+
+.about-content-paper h2 {
+  color: var(--press-ink);
+}
+
+.about-content-paper h2 em,
+.about-facts strong {
+  color: var(--press-rust);
+}
+
+.about-content-body {
+  color: #5f5948;
+}
+
+.about-content-top,
+.about-content-footer,
+.about-facts span,
+.about-principle-line > span {
+  color: var(--press-muted);
+}
+
+/* Ruled stock and calibration targets belong to the academic record. */
+.education-section {
+  background: #eee5ce;
+}
+
+.education-section::before {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 71px,
+    rgb(143 124 81 / 14%) 71px 72px
+  );
+}
+
+.education-section::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 34px;
+  right: 30px;
+  width: 110px;
+  height: 110px;
+  background: var(--press-register) center / contain no-repeat;
+  opacity: 0.5;
+}
+
+.education-heading,
+.paper-topline,
+.paper-footer,
+.paper-kicker {
+  color: var(--press-muted);
+}
+
+.education-board {
+  background: var(--press-olive);
+  box-shadow: 12px 18px 26px rgb(63 64 35 / 15%);
+}
+
+.education-board::before {
+  background: #8b9573;
+}
+
+.institution-title h2 em {
+  color: #747d46;
+}
+
+.degree-stamp {
+  color: #755c2e;
+  border-color: #8f793e;
+}
+
+.thesis-note {
+  background: #e5dec2;
+  border-left-color: #8a7450;
+}
+
+/* These important declarations only supersede the legacy light-canvas overrides. */
+.experience-section {
+  background: var(--press-sage) !important;
+}
+
+.experience-section::before {
+  background: var(--press-register) calc(100% + 175px) 330px / 520px 520px
+    no-repeat !important;
+  opacity: 0.6;
+}
+
+.experience-intro h2 {
+  color: var(--press-ink) !important;
+}
+
+.experience-intro h2 em {
+  color: #7f4b34 !important;
+}
+
+.experience-intro p {
+  color: #5b6048 !important;
+}
+
+.experience-date strong {
+  color: #7f4b34;
+}
+
+.experience-axis {
+  background: #a1a88b !important;
+}
+
+.experience-axis-line {
+  background: #7f4b34;
+}
+
+.experience-axis-dot {
+  background: #7f4b34;
+  border-color: var(--press-sage) !important;
+  box-shadow: 0 0 0 1px #7f4b34;
+}
+
+.experience-axis-end {
+  background: var(--press-sage);
+}
+
+.experience-stamp {
+  color: #824d36;
+  border-color: #986446;
+}
+
+/* Rust ink is reserved for the case-file gallery, not repeated on every surface. */
+.work-section {
+  --press-focus: #f4e6be;
+  background: #974e38;
+  color: var(--press-paper);
+}
+
+.work-section::before {
+  background: var(--press-register) calc(100% + 280px) calc(100% + 250px) /
+    850px 850px no-repeat;
+  opacity: 0.5;
+}
+
+.work-section::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: 160px;
+  height: 200px;
+  background: radial-gradient(circle, #ead1a5 0.8px, transparent 1px) 0 0 / 6px
+    6px;
+  opacity: 0.25;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.work-heading,
+.work-controls,
+.work-intro p {
+  color: #f4e7cd;
+}
+
+.work-heading-line {
+  background: #c69572;
+}
+
+.work-intro h2 {
+  color: #fff4da;
+}
+
+.work-intro h2 em {
+  color: #ead09b;
+}
+
+.clothesline,
+.sheet-string {
+  background: #d8bd8f;
+}
+
+.clothesline-knot {
+  background: #e7c58e;
+}
+
+.sheet-hook {
+  color: #f4e7cd;
+}
+
+.project-image-missing {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0 5px,
+      rgb(83 88 56 / 13%) 5px 6px
+    ),
+    #dfd6ba;
+  color: #4c553b;
+}
+
+.sheet-paper {
+  --press-focus: #253b30;
+}
+
+.work-controls button {
+  border-color: #dfc49c;
+  color: #fff4da;
+}
+
+.work-controls button:hover {
+  background: #f4e7cd;
+  color: #7d3e2c;
+}
+
+/* Pale specimen cards read as collected objects against a deep-ink wall. */
+.skills-section {
+  --press-focus: #e3c484;
+  background: #293d31 !important;
+  color: var(--press-paper) !important;
+}
+
+.skills-section::before {
+  background: var(--press-register) calc(100% + 150px) 450px / 450px 450px
+    no-repeat !important;
+  opacity: 0.2;
+}
+
+.skills-section::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: auto 0 0;
+  height: 70px;
+  background: radial-gradient(circle, #e6d5ab 0.7px, transparent 1px) 0 0 / 9px
+    9px;
+  opacity: 0.13;
+}
+
+.skills-heading,
+.skill-group-label {
+  color: #dfd9c1 !important;
+}
+
+.skills-heading-line {
+  background: #718063 !important;
+}
+
+.skills-intro h2 {
+  color: #fff3d7 !important;
+}
+
+.skills-intro h2 em {
+  color: #d7c78f !important;
+}
+
+.skills-intro p {
+  color: #ded8c2 !important;
+}
+
+.skill-group-label span {
+  color: var(--press-gold) !important;
+}
+
+.skill-filters button {
+  color: #ece3c8 !important;
+  border-color: #849173 !important;
+}
+
+.skill-filters button:hover,
+.skill-filters button.is-active {
+  background: #e9dbb7 !important;
+  border-color: #e9dbb7 !important;
+  color: #283d2e !important;
+}
+
+.skill-filter-marker {
+  background: #7d482f;
+}
+
+.skills-section .skill-card {
+  background: #eee7d4 !important;
+  color: var(--press-ink) !important;
+  border-color: #bdb798 !important;
+}
+
+.skills-section .skill-card:hover {
+  background: #fff5db !important;
+  border-color: #dac898 !important;
+}
+
+.skill-icon img,
+.skill-card:hover .skill-icon img {
+  filter: none;
+}
+
+.skill-icon {
+  border-color: #aaa586 !important;
+}
+
+.skill-fallback-mark {
+  color: #535c3e;
+}
+
+/* The last sheet rests on an envelope, with its folds kept outside the writing. */
+.contact-section {
+  background: #eee4cf;
+}
+
+.contact-section::before {
+  background:
+    linear-gradient(
+      32deg,
+      transparent 49.9%,
+      rgb(128 104 64 / 12%) 50%,
+      transparent 50.1%
+    ),
+    linear-gradient(
+      -32deg,
+      transparent 49.9%,
+      rgb(128 104 64 / 12%) 50%,
+      transparent 50.1%
+    );
+}
+
+.contact-section::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 35px;
+  right: -100px;
+  width: 310px;
+  height: 310px;
+  background: var(--press-register) center / contain no-repeat;
+  opacity: 0.4;
+}
+
+.contact-heading,
+.contact-security {
+  color: var(--press-muted);
+}
+
+.letter-board {
+  background: #b7ae8d;
+  box-shadow: 12px 18px 28px rgb(78 65 37 / 17%);
+}
+
+.letter-board::before {
+  background: #939872;
+}
+
+.letter-head strong {
+  color: var(--press-ink);
+}
+
+.letter-fields input:focus,
+.letter-body-label textarea:focus {
+  border-color: var(--press-rust);
+}
+
+.letter-footer button[type="submit"],
+.letter-footer button[type="submit"] b,
+.letter-footer button[type="submit"]:hover,
+.letter-footer button[type="submit"]:active,
+.letter-footer button[type="submit"]:hover b,
+.letter-footer button[type="submit"]:active b {
+  color: var(--press-rust);
+  border-color: var(--press-rust);
+}
+
+.institution-title p,
+.institution-mark small,
+.education-detail span,
+.education-detail small,
+.thesis-note p,
+.course-list span,
+.sheet-top,
+.sheet-footer,
+.letter-head span,
+.letter-address,
+.letter-date,
+.letter-fields label > span,
+.letter-body-label > span,
+.letter-footer > span,
+.letter-closing > span,
+.signature-space {
+  color: var(--press-muted);
+}
+
+.degree-stamp small {
+  color: #755c2e;
+}
+
+.experience-stamp span {
+  color: #824d36;
+}
+
+.experience-metrics span {
+  color: var(--press-muted);
+}
+
+.experience-date span,
+.experience-tabs button span {
+  color: #5b6048 !important;
+}
+
+.signature-space > span {
+  color: var(--press-muted);
+}
+
+.sheet-meta b,
+.modal-facts b {
+  color: #716549;
+}
+
+.letter-paper input::placeholder,
+.letter-paper textarea::placeholder {
+  color: #746852;
+  opacity: 1;
+}
+
+.project-modal,
+.signature-modal {
+  background: var(--press-paper);
+  color: var(--press-ink);
+}
+
+.modal-top,
+.modal-detail,
+.stack-label,
+.stack-item,
+.signature-modal p {
+  color: var(--press-muted);
+}
+
+.signature-canvas {
+  background: #fcf7e9;
+  border-color: #a3997b;
+}
+
+@media (max-width: 700px) {
+  .hero-poster::before {
+    inset: 10px;
+    background-size: 12px 12px;
+  }
+
+  .hero-poster::after {
+    width: 94vw;
+    right: -28%;
+    top: 19%;
+    background-size: 7px 7px;
+    opacity: 0.2;
+  }
+
+  .portrait-missing strong {
+    font-size: 7rem;
+  }
+
+  .about-section::before {
+    background-position: -240px 180px;
+    background-size: 500px 500px;
+  }
+
+  .education-section::after {
+    top: 13px;
+    right: 16px;
+    width: 65px;
+    height: 65px;
+  }
+
+  .experience-section::before {
+    background-position: calc(100% + 145px) 470px !important;
+    background-size: 320px 320px !important;
+  }
+
+  .work-section::after {
+    width: 90px;
+    height: 90px;
+    opacity: 0.18;
+  }
+
+  .skills-section::before {
+    background-position: calc(100% + 120px) 500px !important;
+    background-size: 300px 300px !important;
+  }
+
+  .contact-section::after {
+    width: 200px;
+    height: 200px;
+    right: -95px;
+  }
+}
+
+@media (forced-colors: active) {
+  .hero-poster::before,
+  .hero-poster::after,
+  .about-section::before,
+  .about-section::after,
+  .education-section::before,
+  .education-section::after,
+  .experience-section::before,
+  .work-section::before,
+  .work-section::after,
+  .skills-section::before,
+  .skills-section::after,
+  .contact-section::before,
+  .contact-section::after {
+    display: none;
+  }
+}
