@@ -21,7 +21,7 @@ export function EducationSection() {
   const stampLanded = reduceMotion || stampInView
 
   return (
-    <section className="education-section" id="education">
+    <section className="education-section" id="education" tabIndex={-1}>
       <div className="education-grain" aria-hidden="true" />
       <div className="education-shell">
         <div className="education-heading">

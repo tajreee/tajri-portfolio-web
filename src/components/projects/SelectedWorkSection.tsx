@@ -200,7 +200,7 @@ export function SelectedWorkSection() {
   }, [])
 
   return (
-    <section className="work-section" id="work">
+    <section className="work-section" id="work" tabIndex={-1}>
       <div className="work-grain" aria-hidden="true" />
       <div className="work-shell">
         <div className="work-heading">

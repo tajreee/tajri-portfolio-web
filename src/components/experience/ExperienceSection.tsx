@@ -53,7 +53,7 @@ export function ExperienceSection() {
   })
 
   return (
-    <section className="experience-section" id="experience">
+    <section className="experience-section" id="experience" tabIndex={-1}>
       <div className="experience-grain" aria-hidden="true" />
       <div className="experience-shell">
         <div className="experience-heading">

@@ -8,7 +8,7 @@ Versi release: `v1.1.0`.
 
 Pembaruan terakhir: 29 Oktober 2026.
 
-Frontend portfolio sudah memiliki tujuh section utama, koreografi scroll berbasis `motion/react`, dialog aksesibel, dan dukungan reduced motion yang mengikuti perubahan preferensi sistem. Build production berhasil.
+Frontend portfolio sudah memiliki tujuh section utama, koreografi scroll berbasis `motion/react`, dialog aksesibel, dan dukungan reduced motion yang mengikuti perubahan preferensi sistem. Pengembangan setelah release `v1.1.0` memakai tema Studio Cetak yang telah disetujui, navbar sticky, dan footer bergaya colophon.
 
 Section yang sudah tersedia:
 
@@ -20,7 +20,7 @@ Section yang sudah tersedia:
 6. Skills
 7. Contact
 
-Footer, navigation, dan penyediaan foto portrait/project masih menjadi pekerjaan berikutnya. Form contact tetap menggunakan `mailto:`, bukan pengiriman melalui backend.
+Foto portrait/project dan automated test suite permanen masih menjadi pekerjaan berikutnya. Form contact tetap menggunakan `mailto:`, bukan pengiriman melalui backend.
 
 ## Riwayat Release
 
@@ -68,18 +68,19 @@ npm run preview
 
 ## Arah Visual
 
-Bahasa visual yang digunakan adalah **grayscale paper archive / torn-paper portfolio**.
+Bahasa visual yang digunakan adalah **Studio Cetak / torn-paper portfolio**, melanjutkan konsep paper archive dari release awal.
 
 Karakter visual:
 
-- Background warm gray dan charcoal.
+- Background ivory, sage, hijau tinta, dan rust yang memberi ritme antar-section.
+- Motif halftone, tanda registrasi cetak, kertas bergaris, dan lipatan amplop di luar area baca.
 - Paper texture dan grain.
 - Torn paper clipping melalui `clip-path`.
 - Push pin, tape, shadow, dan bulletin-board material.
 - Tipografi display `Space Grotesk`.
 - Metadata teknis menggunakan `DM Mono`.
-- Aksen utama sage yellow: `#b6b580`.
-- Warna pendukung rust dan muted gray-green digunakan secara terbatas.
+- Warna utama berasal dari token `--press-*` di `src/print-studio.css`.
+- Aksen rust, olive, dan gold dipakai untuk penekanan serta kontrol interaktif.
 
 Keputusan visual utama:
 
@@ -88,6 +89,17 @@ Keputusan visual utama:
 - Tidak membuat semua konten menjadi card generik.
 - Konten dibuat seperti artefak fisik: poster, lembar akademik, case file, specimen, dan surat.
 - Detail teks tetap dipertahankan, tetapi ditata sebagai dokumen visual agar tidak terasa seperti CV panjang.
+
+## Navbar dan Footer
+
+- Navbar sticky berada di luar `main`, dengan wordmark TA dan enam anchor: About, Education, Experience, Work, Skills, Contact.
+- Penanda section aktif memakai `IntersectionObserver` pada garis baca di bawah navbar, bukan React state update per frame scroll.
+- Pada lebar sampai 1040 px, navigasi menjadi menu disclosure beranimasi yang bisa ditutup lewat Escape, klik luar, perpindahan fokus, pemilihan anchor, atau resize ke desktop. Menu tidak mengunci scroll atau menjadi modal.
+- Skip link menuju `#main-content`; Hero memakai `#home`. Target section dapat menerima fokus setelah navigasi anchor.
+- `scroll-padding-top` memberi ruang untuk navbar pada anchor maupun kontrol yang mendapat fokus. Native hash/history tetap dipertahankan; smooth scrolling dinonaktifkan saat reduced motion aktif.
+- Footer bergaya colophon berisi identitas, navigasi ulang, email, LinkedIn, copyright tahun otomatis, dan Back to top.
+- Link GitHub dan Instagram belum dimasukkan ke footer karena data saat ini masih berupa URL generik; link Hero lama tidak diubah.
+- Komponen navbar/footer tidak memakai native dialog, sehingga tidak mengubah focus containment dan scroll lock dialog proyek atau signature.
 
 ## Hero Section
 
@@ -428,6 +440,8 @@ src/
 ├── App.tsx
 ├── main.tsx
 ├── styles.css
+├── print-studio.css
+├── site-chrome.css
 ├── types/
 │   └── portfolio.ts
 ├── data/
@@ -441,6 +455,9 @@ src/
     │   ├── Marquee.tsx
     │   ├── usePageVisible.ts
     │   └── useReducedMotion.ts
+    ├── layout/
+    │   ├── SiteHeader.tsx
+    │   └── SiteFooter.tsx
     ├── hero/
     │   └── HeroSection.tsx
     ├── about/
@@ -460,10 +477,12 @@ public/assets/
 package.json
 ```
 
-`App.tsx` berfungsi sebagai composition root, menyediakan `MotionConfig`, dan menampilkan progres membaca. Data portfolio dipisahkan ke `src/data`, sedangkan domain type berada di `src/types`.
+`App.tsx` berfungsi sebagai composition root, menyediakan `MotionConfig`, dan menampilkan progres membaca. Navbar dan footer menjadi sibling dari `main` agar landmark banner/contentinfo tetap semantik. Data portfolio dan `sectionLinks` bersama dipisahkan ke `src/data`, sedangkan domain type berada di `src/types`.
 
 Pembagian tanggung jawab:
 
+- `SiteHeader`: navigasi sticky, scrollspy, skip link, dan disclosure mobile.
+- `SiteFooter`: colophon, navigasi sekunder, kontak, dan anchor kembali ke atas.
 - `HeroSection`: poster hero, portrait, social links, dan marquee.
 - `AboutSection`: tiga gaya portrait yang dapat dipilih, portrait fallback, dan content landscape About Me.
 - `EducationSection`: academic record dan wall clipping.
@@ -478,8 +497,6 @@ Pembagian tanggung jawab:
 
 ## Catatan Teknis dan Pekerjaan Berikutnya
 
-- Tambahkan footer jika struktur halaman sudah final.
-- Tambahkan navigation setelah semua section disetujui.
 - Pastikan link Instagram dan GitHub diganti dengan URL asli.
 - Tambahkan foto Hero, tiga portrait About, dan asset project jika tersedia.
 - Pertimbangkan self-hosting font untuk production.
@@ -489,6 +506,10 @@ Pembagian tanggung jawab:
 - Pertimbangkan lazy-loading library yang tidak digunakan untuk mengurangi dependency bundle.
 
 ## Verifikasi Terakhir
+
+### Navbar dan Footer
+
+Pemeriksaan browser mencakup desktop 1440 px, mobile 390 px, narrow/reduced-motion 320 px, tablet 820 px, dan landscape 844 x 430 px. Skenario: seluruh anchor, indikator aktif, deep link langsung, browser Back, skip link, fokus target, Escape/klik luar/Tab pada disclosure, resize menu ke desktop, back-to-top, overflow, dan kontras teks. Regresi dialog proyek, signature canvas, form persistence, serta carousel tetap diperiksa.
 
 ### Koreografi Scroll
 

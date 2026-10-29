@@ -7,6 +7,8 @@ import { ExperienceSection } from './components/experience/ExperienceSection'
 import { HeroSection } from './components/hero/HeroSection'
 import { SelectedWorkSection } from './components/projects/SelectedWorkSection'
 import { SkillsSection } from './components/skills/SkillsSection'
+import { SiteHeader } from './components/layout/SiteHeader'
+import { SiteFooter } from './components/layout/SiteFooter'
 
 function App() {
   const reduceMotion = useReducedMotion()
@@ -27,7 +29,8 @@ function App() {
           style={{ scaleX: readingProgress }}
         />
       )}
-      <main className="hero-page">
+      <SiteHeader />
+      <main className="hero-page" id="main-content" tabIndex={-1}>
         <HeroSection />
         <AboutSection />
         <EducationSection />
@@ -36,6 +39,7 @@ function App() {
         <SkillsSection />
         <ContactSection />
       </main>
+      <SiteFooter />
     </MotionConfig>
   )
 }

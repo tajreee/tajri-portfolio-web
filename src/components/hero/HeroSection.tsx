@@ -30,6 +30,8 @@ export function HeroSection() {
     <section
       ref={posterRef}
       className="hero-poster"
+      id="home"
+      tabIndex={-1}
       aria-label="Tajri Anhaar portfolio introduction"
     >
       <div className="paper-grain" aria-hidden="true" />

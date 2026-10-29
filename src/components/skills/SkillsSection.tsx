@@ -28,7 +28,7 @@ export function SkillsSection() {
       : skillGroups.filter((group) => group.name === activeCategory)
 
   return (
-    <section className="skills-section" id="skills">
+    <section className="skills-section" id="skills" tabIndex={-1}>
       <div className="skills-grain" aria-hidden="true" />
       <div className="skills-shell">
         <div className="skills-heading">

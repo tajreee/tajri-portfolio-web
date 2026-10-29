@@ -96,7 +96,12 @@ export function AboutSection() {
   }
 
   return (
-    <section ref={sectionRef} className="about-section" id="about">
+    <section
+      ref={sectionRef}
+      className="about-section"
+      id="about"
+      tabIndex={-1}
+    >
       <div className="about-grain" aria-hidden="true" />
       <div className="about-shell">
         <div className="about-heading">
