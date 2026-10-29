@@ -520,11 +520,11 @@ Pemeriksaan browser mencakup desktop 1440 px, mobile 390 px, narrow/reduced-moti
 
 ### Koreografi Scroll
 
-- Hero memakai scroll progress yang dihaluskan spring untuk memisahkan gerak portrait dan dua lapisan marquee. Tombol Explore menuju About, dan garis tipis di atas halaman menunjukkan progres membaca.
-- `InkHeading` membuka judul per baris seperti teks yang muncul dari tepi kertas. Urutan hanya berjalan sekali, bukan menyembunyikan judul setiap kali pengguna kembali ke section.
+- Hero memakai scroll progress langsung dengan jarak parallax lebih kecil, tanpa spring yang membuat portrait terus menyusul setelah scroll berhenti. Tombol Explore menuju About, dan garis tipis di atas halaman mengikuti progres membaca secara langsung.
+- `InkHeading` selalu terbaca sejak awal, dengan perubahan opacity singkat yang dipicu sebelum masuk viewport. Teks tidak lagi dipindah seluruhnya keluar dari mask selama entrance.
 - Academic record bergeser ke papan; cap gelar dan evaluasi menekan saat cap itu sendiri terlihat. Observer menargetkan header/cap pendek agar tetap bekerja pada dokumen mobile yang tinggi.
 - Timeline pengalaman terisi berdasarkan posisi scroll tanpa mengubah ukuran dot atau label NOW.
-- Tali proyek terbentang, lalu lembar case file menetap. Ayunan spring merespons scroll, drag, dan tombol carousel. State kedatangan disinkronkan antar-copy agar loop tidak memutar ulang entrance; hanya lembar di sekitar viewport yang mengikuti sway.
+- Tali proyek terbentang, lalu lembar case file menetap. Sway scroll mengikuti posisi secara langsung dengan sudut kecil; spring dipakai untuk drag dan tombol carousel. State kedatangan disinkronkan antar-copy agar loop tidak memutar ulang entrance; hanya lembar di sekitar viewport yang mengikuti sway.
 - Kertas skill melayang vertikal dengan fase berbeda dan diam saat hover/fokus. Filter dan modal mempertahankan transisi keluar-masuk.
 - Surat kontak diletakkan sekali dan garis pembatas tergambar. Fokus pertama langsung menyelesaikan gerakan surat; isi form dan canvas tidak dianimasikan saat digunakan.
 - Reduced motion punya fallback CSS selain pengaturan Motion, sehingga transform berbasis MotionValue juga langsung dinetralkan saat preferensi sistem berubah.
@@ -543,6 +543,20 @@ Integrasi motion mempertahankan visual paper archive dan menggunakan dependency 
 Verifikasi release menggunakan Edge headless pada 320, 390, 820, 1440, dan 2560 px: filter, kontrol keyboard, carousel looping, modal, signature canvas, form persistence, reduced motion, dan horizontal overflow. Koreografi scroll juga diperiksa pada desktop/mobile, termasuk touch scrolling, timeline progress, cap dokumen, konsistensi copy carousel, dan penghentian gerak surat saat fokus.
 
 Pemeriksaan browser saat ini memakai skrip verifikasi lokal di direktori sementara, belum berupa automated test suite permanen dalam repository. Tidak ada error JavaScript yang ditemukan pada skenario tersebut.
+
+### Stabilitas Scroll
+
+Keluhan scroll terasa ringan/berat diperiksa pada build produksi. Tidak ditemukan wheel/touch hijacking atau scroll snap. Input wheel identik menghasilkan 480 px di seluruh tujuh section sebelum dan sesudah perbaikan; perbedaannya berada pada rendering dan gerakan visual, bukan pengali kecepatan scroll.
+
+- Lapisan noise SVG procedural dan blend pada kanvas/dokumen aktif diganti tile PNG 16 x 16 yang diulang, mempertahankan tekstur kertas tanpa filter full-size.
+- Judul langsung terlihat; parallax Hero diperkecil dan tidak memakai lag spring. Progress bar juga mengikuti posisi scroll langsung.
+- Carousel mendeteksi intent horizontal setelah threshold 8 px. Gesture vertikal tidak memindahkan track atau menangkap pointer; offset drag disimpan dalam ref dan ditulis langsung ke track, tanpa rekonsiliasi 21 sheet pada setiap pointer move.
+- Minimum tinggi section/portrait memakai viewport stabil `svh` untuk menghindari perubahan ukuran akibat browser toolbar mobile. Input mobile minimal 16 px untuk menghindari focus zoom pada iOS.
+- Perhitungan observer navbar dibatasi ke margin yang valid dan resize dibatch satu frame. Scroll lock dialog serta kebebasan zoom pengguna tetap dipertahankan.
+
+Uji Edge headless 1440 x 1000 dengan CPU throttling 4x, input dan urutan section yang sama: p95 interval frame Experience berubah dari 116.9 ms menjadi 33.4 ms; Work dari 83.3 ms menjadi 33.4 ms. Ini pengukuran lokal terkontrol, bukan jaminan FPS untuk semua perangkat.
+
+Regresi desktop/mobile juga memeriksa wheel 120 px per section, halaman tidak melanjutkan scroll tanpa input, gesture vertikal/diagonal di atas carousel, drag pendek/snap-back, drag horizontal, klik sheet, looping, anchor/keyboard, decode tile, heading yang terbaca sebelum reveal, reduced motion, dan animasi kertas Skills. Filter Skills tetap mengubah panjang hasil secara eksplisit; tidak ditambah area kosong besar atau scroll snapping untuk menahan pengguna.
 
 Perintah yang digunakan:
 

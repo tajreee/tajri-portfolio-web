@@ -1,4 +1,4 @@
-import { motion, MotionConfig, useScroll, useSpring } from 'motion/react'
+import { motion, MotionConfig, useScroll } from 'motion/react'
 import { useReducedMotion } from './components/common/useReducedMotion'
 import { ContactSection } from './components/contact/ContactSection'
 import { AboutSection } from './components/about/AboutSection'
@@ -13,10 +13,6 @@ import { SiteFooter } from './components/layout/SiteFooter'
 function App() {
   const reduceMotion = useReducedMotion()
   const { scrollYProgress } = useScroll()
-  const readingProgress = useSpring(scrollYProgress, {
-    stiffness: 150,
-    damping: 30,
-  })
   return (
     <MotionConfig
       reducedMotion={reduceMotion ? 'always' : 'never'}
@@ -26,7 +22,7 @@ function App() {
         <motion.div
           className="reading-progress"
           aria-hidden="true"
-          style={{ scaleX: readingProgress }}
+          style={{ scaleX: scrollYProgress }}
         />
       )}
       <SiteHeader />

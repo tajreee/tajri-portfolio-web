@@ -10,6 +10,7 @@
   --press-muted: #685e49;
   --press-rule: #b4a789;
   --press-focus: #924c35;
+  --press-grain: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACkElEQVR4ARyTr3biUBDG0xAgnINARASI4BwCRFREIBAIBKIisqJiRQWiD1DZB1jRB6hYgVhRgahYgViBQFREICL4JxCBg4iIQAQIsL9ZMcydmW+++e7kojYajVfMa7VaP5rNZpezK1av1+1er6dJTmq2bVu1Wk2n9ob1yQ/It9Xb7Ta9u7u7x48VRZmvVqsZZ13TtNJut3vl3CGvqKrazefz93gfi8mn2EG1LMuHIATUPZ1OKcxPxH1iB+AntlksFr+JizRYeIN6MZPJTKiZ6na7HVDYXK9XX9d1F78BMDoejyPOHmbIdfBjBozxZpqmCd67XC6xCuMai2BLILKQvsd3crncgHzIlT40TevQFOHdbDb7sV6vvxki9iAEEQ0W7Aca5rA+0jQUiYCKXMmAfCaExAbKTHJyTelLhcA9n8++LAgiHZJIABDtkRmQs5jeZvoIAhMyh/yUfJt4rfLzB3aThCVNTN4sl8tPziVqslwX0hASD38gV4MkKZfLX8Rz+YwvMEohoeAkSfLtOI6AHAAD1AlQSAxwGzAB3uYT26gKhWBIskiyBrvGkhzUGDROUfITdTLgi1yMOlEZg+/RHIN5kR3I5kOSOrIDCOQr2IVC4f/Lq1Qq79T6kMcokgdlS46BojBSYdJhktcWMuGRuz4DGDHRgMwJw1CWVaJ5BpF8JVKhCUFKfJAlyhuQJWqAIgoTeVyo6RK7gGII34lTPnWCEgdzGTyjrqs09JnmMz2gIPdrcx6T+0ssizVZ2DNqZOKT5LEIMvn/+LJEeUAK0jWmicQxX0KIYqb6gA2W+YtrahAG4CK8i3WpeSqgCQe9Wq0GSFKY/iCeCXtk2tRK/H3fwMn19jw4D7IhmDkDJ/8AAAD//wsvgnwAAAAGSURBVAMAbES/rAw8W30AAAAASUVORK5CYII=");
   --press-register: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240' fill='none' stroke='%238a9274' stroke-width='1'%3E%3Ccircle cx='120' cy='120' r='82'/%3E%3Ccircle cx='120' cy='120' r='60'/%3E%3Ccircle cx='120' cy='120' r='10'/%3E%3Cpath d='M120 0v240M0 120h240M0 0h20M0 0v20M240 0h-20M240 0v20M0 240h20M0 240v-20M240 240h-20M240 240v-20'/%3E%3C/svg%3E");
   background: #d6cbb5;
   color: var(--press-ink);
@@ -41,6 +42,25 @@ body,
 .skills-grain,
 .contact-grain {
   opacity: 0.045;
+}
+
+/* Raster once, then repeat a tiny tile instead of compositing full-size SVG noise. */
+.paper-grain,
+.about-grain,
+.education-grain,
+.experience-grain,
+.work-grain,
+.skills-grain,
+.contact-grain,
+.about-content-paper::after,
+.education-paper::after,
+.experience-paper::after,
+.sheet-paper::after,
+.letter-paper::after {
+  background-image: var(--press-grain);
+  background-size: 16px 16px;
+  background-repeat: repeat;
+  mix-blend-mode: normal !important;
 }
 
 .hero-poster::before,

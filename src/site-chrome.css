@@ -8,7 +8,20 @@ html {
 }
 
 .hero-poster {
-  min-height: calc(100dvh - var(--site-header-height) - 36px);
+  min-height: calc(100svh - var(--site-header-height) - 36px);
+}
+
+.about-section,
+.education-section,
+.experience-section,
+.work-section,
+.skills-section,
+.contact-section {
+  min-height: 100svh;
+}
+
+.portrait-wrap {
+  height: min(72svh, 680px);
 }
 
 .reading-progress {
@@ -430,7 +443,16 @@ html {
 
 @media (max-width: 700px) {
   .hero-poster {
-    min-height: calc(100dvh - var(--site-header-height) - 18px);
+    min-height: calc(100svh - var(--site-header-height) - 18px);
+  }
+
+  .portrait-wrap {
+    height: min(65svh, 570px);
+  }
+
+  .letter-paper input,
+  .letter-paper textarea {
+    font-size: 16px;
   }
 
   .site-mobile-index {
@@ -476,7 +498,7 @@ html {
 
 @media (max-width: 700px) and (max-height: 740px) {
   .portrait-wrap {
-    height: 52dvh;
+    height: 52svh;
     min-height: 0;
   }
 }

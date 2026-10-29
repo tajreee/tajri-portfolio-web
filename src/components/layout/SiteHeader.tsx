@@ -18,11 +18,13 @@ export function SiteHeader() {
       .map((id) => document.getElementById(id))
       .filter((section): section is HTMLElement => section !== null)
     let observer: IntersectionObserver | undefined
+    let resizeFrame = 0
 
     const observe = () => {
       observer?.disconnect()
+      const height = Math.max(2, window.innerHeight)
       const top = Math.min(
-        innerHeight - 2,
+        height - 2,
         Math.ceil(headerRef.current!.getBoundingClientRect().height) + 20,
       )
       // A narrow reading line handles tall sections without scroll-frame state updates.
@@ -32,7 +34,7 @@ export function SiteHeader() {
             if (entry.isIntersecting) setActiveSection(entry.target.id)
           }
         },
-        { rootMargin: `-${top}px 0px -${innerHeight - top - 2}px 0px` },
+        { rootMargin: `${-top}px 0px ${-(height - top - 2)}px 0px` },
       )
       sections.forEach((section) => observer!.observe(section))
       const current = [...sections]
@@ -41,16 +43,25 @@ export function SiteHeader() {
       setActiveSection(current?.id || 'home')
     }
 
+    const queueObserve = () => {
+      if (resizeFrame) return
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = 0
+        observe()
+      })
+    }
+
     const initialTarget = sections.find(
       (section) => `#${section.id}` === location.hash,
     )
     if (initialTarget)
       initialTarget.scrollIntoView({ behavior: 'instant', block: 'start' })
     observe()
-    window.addEventListener('resize', observe)
+    window.addEventListener('resize', queueObserve)
     return () => {
       observer?.disconnect()
-      window.removeEventListener('resize', observe)
+      window.removeEventListener('resize', queueObserve)
+      cancelAnimationFrame(resizeFrame)
     }
   }, [])
 
@@ -88,7 +99,7 @@ export function SiteHeader() {
         return
       event.preventDefault()
       setMenuOpen(false)
-      toggleRef.current?.focus()
+      toggleRef.current?.focus({ preventScroll: true })
     }
     document.addEventListener('pointerdown', dismiss)
     document.addEventListener('keydown', dismissWithEscape)

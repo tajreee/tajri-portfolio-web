@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import {
   animate,
   motion,
@@ -65,6 +72,9 @@ function ProjectImage({ project }: { project: Project }) {
         <img
           src={project.image}
           alt={`Preview ${project.title}`}
+          loading="lazy"
+          decoding="async"
+          draggable={false}
           onError={() => setFailed(true)}
         />
       )}
@@ -106,12 +116,18 @@ export function SelectedWorkSection() {
   const centerIndex = projects.length * 3
   const [activeIndex, setActiveIndex] = useState(centerIndex)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [dragStart, setDragStart] = useState<number | null>(null)
-  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
   const [transitionEnabled, setTransitionEnabled] = useState(true)
   const [slideStep, setSlideStep] = useState(0)
   const trackRef = useRef<HTMLDivElement>(null)
   const galleryRef = useRef<HTMLDivElement>(null)
+  const gestureRef = useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    offset: number
+    dragging: boolean
+  } | null>(null)
   const draggedRef = useRef(false)
   const reduceMotion = useReducedMotion()
   const galleryInView = useInView(galleryRef, { once: true, amount: 0.08 })
@@ -122,46 +138,95 @@ export function SelectedWorkSection() {
   const scrollAngle = useTransform(
     scrollYProgress,
     [0, 0.3, 0.7, 1],
-    [5, 0, 0, -4],
+    [1.5, 0, 0, -1.5],
   )
   const dragAngle = useMotionValue(0)
-  const combinedAngle = useTransform(() => scrollAngle.get() + dragAngle.get())
-  const sway = useSpring(combinedAngle, { stiffness: 120, damping: 22 })
+  const springDragAngle = useSpring(dragAngle, { stiffness: 120, damping: 22 })
+  const sway = useTransform(() => scrollAngle.get() + springDragAngle.get())
+  const resetGesture = useCallback(() => {
+    const gesture = gestureRef.current
+    if (!gesture) return
+    gestureRef.current = null
+    draggedRef.current = true
+    if (gesture.dragging) {
+      setIsDragging(false)
+      dragAngle.set(0)
+    }
+    const gallery = galleryRef.current
+    if (gallery?.hasPointerCapture(gesture.pointerId))
+      gallery.releasePointerCapture(gesture.pointerId)
+  }, [dragAngle])
   const repeatedProjects = Array.from({ length: 7 }, () => projects).flat()
   const move = (direction: number) => {
     if (!reduceMotion)
       animate(dragAngle, [-direction * 5, 0], { duration: 0.65 })
     setActiveIndex((index) => index + direction)
   }
-  const handlePointerDown = (event: React.PointerEvent) => {
-    if (event.button !== 0) return
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (
+      !event.isPrimary ||
+      event.button !== 0 ||
+      gestureRef.current ||
+      (event.target instanceof Element &&
+        event.target.closest(
+          'a, button, input, select, textarea, [role="button"], [contenteditable="true"]',
+        ))
+    )
+      return
     draggedRef.current = false
-    dragAngle.stop()
-    setDragStart(event.clientX)
-    event.currentTarget.setPointerCapture(event.pointerId)
-  }
-  const handlePointerMove = (event: React.PointerEvent) => {
-    if (dragStart !== null) {
-      const offset = event.clientX - dragStart
-      if (Math.abs(offset) > 6) draggedRef.current = true
-      setDragOffset(offset)
-      if (!reduceMotion) dragAngle.set(Math.max(-7, Math.min(7, -offset / 45)))
+    gestureRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      offset: 0,
+      dragging: false,
     }
   }
-  const handlePointerUp = () => {
-    if (Math.abs(dragOffset) > 30 && slideStep > 0) {
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const gesture = gestureRef.current
+    if (!gesture || event.pointerId !== gesture.pointerId) return
+    const offset = event.clientX - gesture.startX
+    if (!gesture.dragging) {
+      const verticalOffset = event.clientY - gesture.startY
+      if (Math.max(Math.abs(offset), Math.abs(verticalOffset)) < 8) return
+      draggedRef.current = true
+      if (Math.abs(offset) <= Math.abs(verticalOffset) * 1.2) {
+        gestureRef.current = null
+        return
+      }
+      gesture.dragging = true
+      dragAngle.stop()
+      // Disable easing before the first transform write, without waiting for React.
+      trackRef.current?.classList.add('track-no-transition')
+      setIsDragging(true)
+      event.currentTarget.setPointerCapture(event.pointerId)
+    }
+    gesture.offset = offset
+    if (trackRef.current)
+      trackRef.current.style.transform = `translateX(${offset - activeIndex * slideStep}px)`
+    if (!reduceMotion) dragAngle.set(Math.max(-7, Math.min(7, -offset / 45)))
+  }
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const gesture = gestureRef.current
+    if (!gesture || event.pointerId !== gesture.pointerId) return
+    if (!gesture.dragging) {
+      gestureRef.current = null
+      return
+    }
+    if (Math.abs(gesture.offset) > 30 && slideStep > 0) {
       const steps = Math.max(
         1,
         Math.min(
           projects.length + 1,
-          Math.round(Math.abs(dragOffset) / slideStep),
+          Math.round(Math.abs(gesture.offset) / slideStep),
         ),
       )
-      setActiveIndex((index) => index + (dragOffset < 0 ? steps : -steps))
+      setActiveIndex((index) => index + (gesture.offset < 0 ? steps : -steps))
     }
-    setDragStart(null)
-    setDragOffset(0)
-    dragAngle.set(0)
+    resetGesture()
+  }
+  const handlePointerCancel = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (gestureRef.current?.pointerId === event.pointerId) resetGesture()
   }
   const normalizeLoop = () => {
     const lowerLoopBoundary = projects.length * 2
@@ -178,8 +243,15 @@ export function SelectedWorkSection() {
     }
   }
 
+  useLayoutEffect(() => {
+    // Restore the snap target after React restores the CSS transition, even on a short drag.
+    if (trackRef.current)
+      trackRef.current.style.transform = `translateX(${(gestureRef.current?.offset ?? 0) - activeIndex * slideStep}px)`
+  }, [activeIndex, isDragging, slideStep])
+
   useEffect(() => {
     const measure = () => {
+      resetGesture()
       const firstSheet = trackRef.current
         ?.firstElementChild as HTMLElement | null
       if (!firstSheet) return
@@ -192,12 +264,10 @@ export function SelectedWorkSection() {
     measure()
     const observer = new ResizeObserver(measure)
     if (trackRef.current) observer.observe(trackRef.current)
-    window.addEventListener('resize', measure)
     return () => {
       observer.disconnect()
-      window.removeEventListener('resize', measure)
     }
-  }, [])
+  }, [resetGesture])
 
   return (
     <section className="work-section" id="work" tabIndex={-1}>
@@ -221,11 +291,12 @@ export function SelectedWorkSection() {
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerCancel={() => {
-            setDragStart(null)
-            setDragOffset(0)
-            draggedRef.current = true
-            dragAngle.set(0)
+          onPointerCancel={handlePointerCancel}
+          onLostPointerCapture={(event) => {
+            if (event.target === event.currentTarget) handlePointerCancel(event)
+          }}
+          onPointerLeave={(event) => {
+            if (!gestureRef.current?.dragging) handlePointerCancel(event)
           }}
         >
           <motion.div
@@ -240,10 +311,7 @@ export function SelectedWorkSection() {
           </motion.div>
           <div
             ref={trackRef}
-            className={`hanging-track ${transitionEnabled && dragStart === null ? '' : 'track-no-transition'}`}
-            style={{
-              transform: `translateX(${dragOffset - activeIndex * slideStep}px)`,
-            }}
+            className={`hanging-track ${transitionEnabled && !isDragging ? '' : 'track-no-transition'}`}
             onTransitionEnd={(event) => {
               if (
                 event.target === event.currentTarget &&
