@@ -4,7 +4,11 @@ Dokumentasi progres dan keputusan desain untuk prototype portfolio web Tajri Min
 
 ## Status
 
-Prototype frontend sudah berjalan dan build production berhasil.
+Versi release: `v1.1.0`.
+
+Pembaruan terakhir: 29 Oktober 2026.
+
+Frontend portfolio sudah memiliki tujuh section utama, koreografi scroll berbasis `motion/react`, dialog aksesibel, dan dukungan reduced motion yang mengikuti perubahan preferensi sistem. Build production berhasil.
 
 Section yang sudah tersedia:
 
@@ -16,7 +20,22 @@ Section yang sudah tersedia:
 6. Skills
 7. Contact
 
-Section lain belum dibuat dan dapat dilanjutkan pada sesi berikutnya.
+Footer, navigation, dan penyediaan foto portrait/project masih menjadi pekerjaan berikutnya. Form contact tetap menggunakan `mailto:`, bukan pengiriman melalui backend.
+
+## Riwayat Release
+
+### v1.1.0 / 29 Oktober 2026
+
+- Refactor section, data portfolio, dan domain type menjadi modul terpisah; menambahkan About Me dan Professional Experience setelah release awal.
+- Hero parallax, heading per baris, paper arrival, cap dokumen, timeline scroll, hanging-project sway, serta transisi filter dan modal.
+- Play/Pause untuk marquee dan portrait; autoplay berhenti saat offscreen, tab browser tidak aktif, atau reduced motion diaktifkan.
+- Navigasi keyboard pada portrait, native dialog dengan Escape dan pemulihan fokus, serta perbaikan layout mobile.
+- Surat contact langsung berhenti bergerak saat difokuskan; data form dan signature tetap tersimpan selama halaman aktif.
+- Versi `package.json` dan metadata root `package-lock.json` diselaraskan ke `1.1.0`; tidak ada dependency aplikasi baru.
+
+### v1.0.0 / 27 Oktober 2026
+
+- Release awal portfolio dengan arah visual paper archive, academic record, hanging projects, skills, dan surat contact.
 
 ## Cara Menjalankan
 
@@ -272,7 +291,7 @@ Jika asset tidak ditemukan, placeholder otomatis menampilkan nomor dan nama proj
 
 ## Skills Section
 
-Skills dibuat sebagai **technical specimen wall** dengan background charcoal.
+Skills dibuat sebagai **technical specimen wall** dengan background warm paper yang konsisten dengan Hero dan Experience.
 
 Kategori:
 
@@ -287,10 +306,7 @@ Setiap skill ditampilkan sebagai kartu specimen berisi:
 - Nama skill.
 - Status `ACTIVE`.
 - Konteks project atau penggunaan.
-- Logo teknologi.
-- Nama skill.
 - Kategori.
-- Konteks pemakaian.
 - Hover elevation dan perubahan warna.
 - Fallback inisial dua huruf jika logo gagal dimuat.
 
@@ -399,14 +415,11 @@ Untuk form server-side di masa depan, gunakan:
 ```text
 public/
 └── assets/
-    ├── logo-universitas-indonesia.png
-    ├── tajri-portrait.jpg
-    ├── project-ekatalog.jpg
-    ├── project-minigame-energi.jpg
-    └── project-penilaian-merit.jpg
+    ├── logo-inditech.png
+    └── logo-universitas-indonesia.png
 ```
 
-Asset project bersifat opsional karena placeholder sudah tersedia.
+Struktur di atas menunjukkan asset yang tersedia saat release `v1.1.0`. Foto Hero, tiga portrait About, dan gambar project belum tersedia; masing-masing memakai fallback. Path asset yang diharapkan tercantum pada section terkait.
 
 ## Struktur Komponen
 
@@ -423,13 +436,19 @@ src/
 │   └── skills.ts
 └── components/
     ├── common/
-    │   └── Marquee.tsx
+    │   ├── AnimatedDialog.tsx
+    │   ├── InkHeading.tsx
+    │   ├── Marquee.tsx
+    │   ├── usePageVisible.ts
+    │   └── useReducedMotion.ts
     ├── hero/
     │   └── HeroSection.tsx
     ├── about/
     │   └── AboutSection.tsx
     ├── education/
     │   └── EducationSection.tsx
+    ├── experience/
+    │   └── ExperienceSection.tsx
     ├── projects/
     │   └── SelectedWorkSection.tsx
     ├── skills/
@@ -441,24 +460,28 @@ public/assets/
 package.json
 ```
 
-`App.tsx` sekarang berfungsi sebagai composition root dan hanya menyusun section utama. Data portfolio dipisahkan ke `src/data`, sedangkan domain type berada di `src/types`.
+`App.tsx` berfungsi sebagai composition root, menyediakan `MotionConfig`, dan menampilkan progres membaca. Data portfolio dipisahkan ke `src/data`, sedangkan domain type berada di `src/types`.
 
 Pembagian tanggung jawab:
 
 - `HeroSection`: poster hero, portrait, social links, dan marquee.
 - `AboutSection`: tiga gaya portrait yang dapat dipilih, portrait fallback, dan content landscape About Me.
 - `EducationSection`: academic record dan wall clipping.
+- `ExperienceSection`: work-log timeline, record internship, dan evaluasi.
 - `SelectedWorkSection`: carousel project, project image fallback, popup detail, dan stack marks.
 - `SkillsSection`: filter kategori, skill cards, dan logo fallback.
 - `ContactSection`: letter form, validasi lokal, mailto, dan signature canvas modal.
 - `Marquee`: helper visual yang digunakan oleh Hero.
+- `AnimatedDialog`: portal/native dialog, transisi, scroll lock, dan pemulihan fokus.
+- `InkHeading`: reveal judul per baris, sekali saat masuk viewport.
+- `usePageVisible` dan `useReducedMotion`: preferensi aksesibilitas serta kontrol autoplay.
 
 ## Catatan Teknis dan Pekerjaan Berikutnya
 
 - Tambahkan footer jika struktur halaman sudah final.
 - Tambahkan navigation setelah semua section disetujui.
 - Pastikan link Instagram dan GitHub diganti dengan URL asli.
-- Tambahkan asset project jika tersedia.
+- Tambahkan foto Hero, tiga portrait About, dan asset project jika tersedia.
 - Pertimbangkan self-hosting font untuk production.
 - Pertimbangkan lazy-loading logo skill eksternal atau menggantinya dengan asset lokal.
 - Tambahkan automated test suite permanen untuk interaksi dan regresi visual.
@@ -466,6 +489,19 @@ Pembagian tanggung jawab:
 - Pertimbangkan lazy-loading library yang tidak digunakan untuk mengurangi dependency bundle.
 
 ## Verifikasi Terakhir
+
+### Koreografi Scroll
+
+- Hero memakai scroll progress yang dihaluskan spring untuk memisahkan gerak portrait dan dua lapisan marquee. Tombol Explore menuju About, dan garis tipis di atas halaman menunjukkan progres membaca.
+- `InkHeading` membuka judul per baris seperti teks yang muncul dari tepi kertas. Urutan hanya berjalan sekali, bukan menyembunyikan judul setiap kali pengguna kembali ke section.
+- Academic record bergeser ke papan; cap gelar dan evaluasi menekan saat cap itu sendiri terlihat. Observer menargetkan header/cap pendek agar tetap bekerja pada dokumen mobile yang tinggi.
+- Timeline pengalaman terisi berdasarkan posisi scroll tanpa mengubah ukuran dot atau label NOW.
+- Tali proyek terbentang, lalu lembar case file menetap. Ayunan spring merespons scroll, drag, dan tombol carousel. State kedatangan disinkronkan antar-copy agar loop tidak memutar ulang entrance; hanya lembar di sekitar viewport yang mengikuti sway.
+- Specimen skill masuk berurutan singkat dan terangkat saat diinspeksi. Filter dan modal mempertahankan transisi keluar-masuk.
+- Surat kontak diletakkan sekali dan garis pembatas tergambar. Fokus pertama langsung menyelesaikan gerakan surat; isi form dan canvas tidak dianimasikan saat digunakan.
+- Reduced motion punya fallback CSS selain pengaturan Motion, sehingga transform berbasis MotionValue juga langsung dinetralkan saat preferensi sistem berubah.
+
+Motion memakai transform/opacity dan MotionValues, tanpa React state update per frame scroll, animasi tekstur, WebGL tambahan, atau scroll hijacking.
 
 Integrasi motion mempertahankan visual paper archive dan menggunakan dependency `motion` yang sudah tersedia, tanpa menambah dependency aplikasi.
 
@@ -476,12 +512,15 @@ Integrasi motion mempertahankan visual paper archive dan menggunakan dependency 
 - `MotionConfig` dan autoplay mengikuti perubahan preferensi reduced motion tanpa reload.
 - Override responsif ditempatkan setelah aturan desktop agar layout mobile tidak tertimpa.
 
-Browser check menggunakan Edge headless pada 1440 px, 820 px, 390 px, dan 320 px: filter, kontrol keyboard, modal, signature canvas, form persistence, reduced motion, dan horizontal overflow.
+Verifikasi release menggunakan Edge headless pada 320, 390, 820, 1440, dan 2560 px: filter, kontrol keyboard, carousel looping, modal, signature canvas, form persistence, reduced motion, dan horizontal overflow. Koreografi scroll juga diperiksa pada desktop/mobile, termasuk touch scrolling, timeline progress, cap dokumen, konsistensi copy carousel, dan penghentian gerak surat saat fokus.
+
+Pemeriksaan browser saat ini memakai skrip verifikasi lokal di direktori sementara, belum berupa automated test suite permanen dalam repository. Tidak ada error JavaScript yang ditemukan pada skenario tersebut.
 
 Perintah yang digunakan:
 
 ```bash
 npm run build
+git diff --check
 ```
 
 Hasil terakhir:

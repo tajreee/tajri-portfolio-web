@@ -64,9 +64,19 @@ function DialogSurface({
       >
         <motion.div
           className={className}
-          initial={reduceMotion ? false : { y: 18, rotate: -0.6 }}
-          animate={{ y: 0, rotate: 0 }}
-          exit={reduceMotion ? {} : { y: 8, transition: { duration: 0.16 } }}
+          initial={reduceMotion ? false : { y: 38, rotate: -1.5, scale: 0.96 }}
+          animate={{ y: 0, rotate: 0, scale: 1 }}
+          exit={
+            reduceMotion
+              ? {}
+              : {
+                  y: 18,
+                  rotate: 0.8,
+                  scale: 0.98,
+                  transition: { duration: 0.18 },
+                }
+          }
+          transition={{ duration: reduceMotion ? 0 : 0.42 }}
         >
           {children}
         </motion.div>

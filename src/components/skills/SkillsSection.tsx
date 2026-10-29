@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence, LayoutGroup, motion } from 'motion/react'
 import { skillGroups } from '../../data/skills'
 import { useReducedMotion } from '../common/useReducedMotion'
+import { InkHeading } from '../common/InkHeading'
 
 function SkillMark({ icon, name }: { icon: string; name: string }) {
   const [failed, setFailed] = useState(false)
@@ -36,11 +37,7 @@ export function SkillsSection() {
           <span>TOOLS WITH A PLACE TO GO</span>
         </div>
         <div className="skills-intro">
-          <h2>
-            A working vocabulary
-            <br />
-            <em>for real systems.</em>
-          </h2>
+          <InkHeading first="A working vocabulary" second="for real systems." />
           <p>
             Bukan daftar teknologi yang berdiri sendiri. Setiap skill di sini
             terhubung ke proyek, keputusan, atau kebiasaan kerja yang pernah
@@ -75,7 +72,7 @@ export function SkillsSection() {
             )}
           </div>
           <div className="skill-groups" id="skill-results">
-            <AnimatePresence initial={false} mode="popLayout">
+            <AnimatePresence initial={!reduceMotion} mode="popLayout">
               {visibleGroups.map((group) => (
                 <motion.div
                   className="skill-group"
@@ -95,7 +92,39 @@ export function SkillsSection() {
                   </div>
                   <div className="skill-grid">
                     {group.skills.map((skill, index) => (
-                      <article className="skill-card" key={skill.name}>
+                      <motion.article
+                        className="skill-card"
+                        key={skill.name}
+                        initial={
+                          reduceMotion
+                            ? false
+                            : {
+                                y: 22,
+                                rotate: index % 2 ? 2 : -2,
+                                opacity: 0.65,
+                              }
+                        }
+                        animate={
+                          reduceMotion
+                            ? { y: 0, rotate: 0, opacity: 1 }
+                            : undefined
+                        }
+                        whileInView={{ y: 0, rotate: 0, opacity: 1 }}
+                        viewport={{ once: true, amount: 0.15 }}
+                        whileHover={
+                          reduceMotion
+                            ? undefined
+                            : {
+                                y: -9,
+                                rotate: -1.5,
+                                transition: { duration: 0.2, delay: 0 },
+                              }
+                        }
+                        transition={{
+                          duration: reduceMotion ? 0 : 0.45,
+                          delay: reduceMotion ? 0 : index * 0.035,
+                        }}
+                      >
                         <div className="skill-card-top">
                           <span>{String(index + 1).padStart(2, '0')}</span>
                           <span>ACTIVE</span>
@@ -106,7 +135,7 @@ export function SkillsSection() {
                         <h3>{skill.name}</h3>
                         <p>{skill.used}</p>
                         <span className="skill-card-arrow">↗</span>
-                      </article>
+                      </motion.article>
                     ))}
                   </div>
                 </motion.div>

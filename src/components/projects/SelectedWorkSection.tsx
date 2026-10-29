@@ -1,9 +1,61 @@
-import { useEffect, useRef, useState } from 'react'
-import { motion } from 'motion/react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  animate,
+  motion,
+  useInView,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from 'motion/react'
 import { projects } from '../../data/projects'
 import type { Project } from '../../types/portfolio'
 import { AnimatedDialog } from '../common/AnimatedDialog'
 import { useReducedMotion } from '../common/useReducedMotion'
+import { InkHeading } from '../common/InkHeading'
+
+function HangingMotion({
+  children,
+  index,
+  sway,
+  arrived,
+}: {
+  children: ReactNode
+  index: number
+  sway: MotionValue<number>
+  arrived: boolean
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { margin: '0px 100px' })
+  const reduceMotion = useReducedMotion()
+  const angle = index % 2 ? 7 : -7
+  const ready = reduceMotion || arrived
+
+  return (
+    <motion.div
+      ref={ref}
+      className="sheet-sway"
+      style={{ rotate: !reduceMotion && inView ? sway : 0 }}
+    >
+      <motion.div
+        className="sheet-arrival"
+        initial={false}
+        animate={
+          ready
+            ? { rotate: 0, y: 0, opacity: 1 }
+            : { rotate: angle, y: -14, opacity: 0.65 }
+        }
+        transition={{
+          duration: reduceMotion || !inView ? 0 : 0.75,
+          delay: reduceMotion || !inView ? 0 : (index % 3) * 0.06,
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  )
+}
 
 function ProjectImage({ project }: { project: Project }) {
   const [failed, setFailed] = useState(false)
@@ -59,14 +111,32 @@ export function SelectedWorkSection() {
   const [transitionEnabled, setTransitionEnabled] = useState(true)
   const [slideStep, setSlideStep] = useState(0)
   const trackRef = useRef<HTMLDivElement>(null)
+  const galleryRef = useRef<HTMLDivElement>(null)
   const draggedRef = useRef(false)
   const reduceMotion = useReducedMotion()
+  const galleryInView = useInView(galleryRef, { once: true, amount: 0.08 })
+  const { scrollYProgress } = useScroll({
+    target: galleryRef,
+    offset: ['start end', 'end start'],
+  })
+  const scrollAngle = useTransform(
+    scrollYProgress,
+    [0, 0.3, 0.7, 1],
+    [5, 0, 0, -4],
+  )
+  const dragAngle = useMotionValue(0)
+  const combinedAngle = useTransform(() => scrollAngle.get() + dragAngle.get())
+  const sway = useSpring(combinedAngle, { stiffness: 120, damping: 22 })
   const repeatedProjects = Array.from({ length: 7 }, () => projects).flat()
-  const move = (direction: number) =>
+  const move = (direction: number) => {
+    if (!reduceMotion)
+      animate(dragAngle, [-direction * 5, 0], { duration: 0.65 })
     setActiveIndex((index) => index + direction)
+  }
   const handlePointerDown = (event: React.PointerEvent) => {
     if (event.button !== 0) return
     draggedRef.current = false
+    dragAngle.stop()
     setDragStart(event.clientX)
     event.currentTarget.setPointerCapture(event.pointerId)
   }
@@ -75,6 +145,7 @@ export function SelectedWorkSection() {
       const offset = event.clientX - dragStart
       if (Math.abs(offset) > 6) draggedRef.current = true
       setDragOffset(offset)
+      if (!reduceMotion) dragAngle.set(Math.max(-7, Math.min(7, -offset / 45)))
     }
   }
   const handlePointerUp = () => {
@@ -90,6 +161,7 @@ export function SelectedWorkSection() {
     }
     setDragStart(null)
     setDragOffset(0)
+    dragAngle.set(0)
   }
   const normalizeLoop = () => {
     const lowerLoopBoundary = projects.length * 2
@@ -137,17 +209,14 @@ export function SelectedWorkSection() {
           <span>CLICK A SHEET TO OPEN</span>
         </div>
         <div className="work-intro">
-          <h2>
-            Projects that held
-            <br />
-            <em>under pressure.</em>
-          </h2>
+          <InkHeading first="Projects that held" second="under pressure." />
           <p>
             Potongan dari tiga proyek magang: masalah nyata, keputusan teknis,
             dan pekerjaan yang berhasil sampai ke rilis.
           </p>
         </div>
         <div
+          ref={galleryRef}
           className="hanging-track-window"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -156,12 +225,19 @@ export function SelectedWorkSection() {
             setDragStart(null)
             setDragOffset(0)
             draggedRef.current = true
+            dragAngle.set(0)
           }}
         >
-          <div className="clothesline" aria-hidden="true">
+          <motion.div
+            className="clothesline"
+            aria-hidden="true"
+            initial={false}
+            animate={{ scaleX: reduceMotion || galleryInView ? 1 : 0.15 }}
+            transition={{ duration: reduceMotion ? 0 : 0.85 }}
+          >
             <span className="clothesline-knot clothesline-knot-left" />
             <span className="clothesline-knot clothesline-knot-right" />
-          </div>
+          </motion.div>
           <div
             ref={trackRef}
             className={`hanging-track ${transitionEnabled && dragStart === null ? '' : 'track-no-transition'}`}
@@ -189,45 +265,51 @@ export function SelectedWorkSection() {
               >
                 <div className="sheet-string" />
                 <div className="sheet-hook">●</div>
-                <div className="sheet-paper">
-                  <div className="sheet-top">
-                    <span>{project.number} / CASE FILE</span>
-                    <span>{project.type}</span>
+                <HangingMotion
+                  index={index}
+                  sway={sway}
+                  arrived={galleryInView}
+                >
+                  <div className="sheet-paper">
+                    <div className="sheet-top">
+                      <span>{project.number} / CASE FILE</span>
+                      <span>{project.type}</span>
+                    </div>
+                    <ProjectImage project={project} />
+                    <h3>{project.title}</h3>
+                    <p>{project.summary}</p>
+                    <div className="sheet-meta">
+                      <span>
+                        <b>TIMELINE</b>
+                        {project.timeline}
+                      </span>
+                      <span>
+                        <b>ROLE</b>
+                        {project.role}
+                      </span>
+                    </div>
+                    <div className="sheet-footer">
+                      <button
+                        className="sheet-open-button"
+                        aria-label={`Open ${project.title} project detail`}
+                        tabIndex={
+                          index >= activeIndex &&
+                          index < activeIndex + projects.length
+                            ? 0
+                            : -1
+                        }
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setSelectedProject(project)
+                        }}
+                      >
+                        OPEN DETAIL <span>↗</span>
+                      </button>
+                      <span>TA / 26</span>
+                    </div>
                   </div>
-                  <ProjectImage project={project} />
-                  <h3>{project.title}</h3>
-                  <p>{project.summary}</p>
-                  <div className="sheet-meta">
-                    <span>
-                      <b>TIMELINE</b>
-                      {project.timeline}
-                    </span>
-                    <span>
-                      <b>ROLE</b>
-                      {project.role}
-                    </span>
-                  </div>
-                  <div className="sheet-footer">
-                    <button
-                      className="sheet-open-button"
-                      aria-label={`Open ${project.title} project detail`}
-                      tabIndex={
-                        index >= activeIndex &&
-                        index < activeIndex + projects.length
-                          ? 0
-                          : -1
-                      }
-                      onPointerDown={(event) => event.stopPropagation()}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        setSelectedProject(project)
-                      }}
-                    >
-                      OPEN DETAIL <span>↗</span>
-                    </button>
-                    <span>TA / 26</span>
-                  </div>
-                </div>
+                </HangingMotion>
               </article>
             ))}
           </div>

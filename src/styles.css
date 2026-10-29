@@ -363,3 +363,32 @@ html { scrollbar-gutter: stable; }
   .hanging-sheet:nth-child(3n + 2):hover .sheet-paper { transform: rotate(1.5deg); }
   .hanging-sheet:nth-child(3n):hover .sheet-paper { transform: rotate(-.3deg); }
 }
+
+/* The archive opens in layers: type, pinned records, then hanging case files. */
+.reading-progress { position: fixed; inset: 0 0 auto; z-index: 15; height: 3px; background: #55564f; transform-origin: left; pointer-events: none; }
+.hero-portrait-depth { position: absolute; inset: 0; transform-origin: 50% 20%; }
+.marquee-layer { overflow: visible; }
+.hero-scroll-cue { position: absolute; z-index: 5; right: 42px; bottom: 78px; display: inline-flex; align-items: center; gap: 12px; padding-block: 8px; color: #55564f; font: 9px 'DM Mono', monospace; letter-spacing: .12em; }
+.ink-line { display: block; overflow: clip; padding-block: .14em; margin-block: -.14em; }
+.ink-line > span, .ink-line > em { display: block; }
+.degree-stamp { transform: none; translate: -24px 0; rotate: 12deg; }
+.experience-stamp { transform: none; rotate: 8deg; }
+.experience-axis-line { position: absolute; inset: 0; width: 2px; background: #55564f; transform-origin: top; }
+.sheet-sway, .sheet-arrival { transform-origin: 50% 0%; }
+.skill-card { transition: background .25s ease, border-color .25s ease, color .25s ease; }
+.skill-card:hover { transform: none; }
+@media (max-width: 700px) {
+  .hero-scroll-cue { right: 22px; bottom: 76px; gap: 8px; font-size: 8px; }
+  .degree-stamp { translate: 0 0; }
+}
+
+/* CSS also clears live MotionValue transforms when the preference changes. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-portrait-depth, .hero-type-drift, .record-arrival, .sheet-sway,
+  .sheet-arrival, .ink-line > span, .ink-line > em, .skill-card,
+  .about-portrait-slide, .about-facts > div, .letter-paper,
+  .degree-stamp, .experience-stamp, .experience-axis-line, .clothesline {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

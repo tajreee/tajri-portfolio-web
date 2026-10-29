@@ -1,7 +1,14 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  AnimatePresence,
+  motion,
+  useAnimationControls,
+  useInView,
+} from 'motion/react'
 import { contactEmail } from '../../data/portfolio'
 import type { ContactFormValues } from '../../types/portfolio'
 import { AnimatedDialog } from '../common/AnimatedDialog'
+import { useReducedMotion } from '../common/useReducedMotion'
 
 function SignatureModal({
   open,
@@ -93,6 +100,13 @@ function SignatureModal({
 }
 
 export function ContactSection() {
+  const reduceMotion = useReducedMotion()
+  const boardRef = useRef<HTMLDivElement>(null)
+  const letterControls = useAnimationControls()
+  // Observe the stationary board at a low threshold, even on tall mobile letters.
+  const inView = useInView(boardRef, { once: true, amount: 0.01 })
+  const [hasInteracted, setHasInteracted] = useState(false)
+  const settleImmediately = reduceMotion || hasInteracted
   const [form, setForm] = useState<ContactFormValues>({
     dear: 'Tajri',
     subject: '',
@@ -104,6 +118,17 @@ export function ContactSection() {
   const [status, setStatus] = useState('')
   const [signatureOpen, setSignatureOpen] = useState(false)
   const [signature, setSignature] = useState('')
+
+  useEffect(() => {
+    if (settleImmediately) {
+      letterControls.stop()
+      letterControls.set('settled')
+    } else if (inView) {
+      void letterControls.start('settled')
+    }
+    return () => letterControls.stop()
+  }, [inView, letterControls, settleImmediately])
+
   const today = new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'long',
@@ -139,10 +164,30 @@ export function ContactSection() {
           <span className="contact-heading-line" />
           <span>WRITE A LETTER</span>
         </div>
-        <div className="letter-board">
+        <div className="letter-board" ref={boardRef}>
           <div className="letter-pin letter-pin-left" />
           <div className="letter-pin letter-pin-right" />
-          <form className="letter-paper" onSubmit={sendLetter}>
+          <motion.form
+            className="letter-paper"
+            onSubmit={sendLetter}
+            onFocusCapture={() => {
+              if (hasInteracted) return
+              // Stop synchronously before typing or opening the signature canvas.
+              letterControls.stop()
+              letterControls.set('settled')
+              setHasInteracted(true)
+            }}
+            initial={
+              reduceMotion ? false : { y: 28, rotate: -0.8, opacity: 0.78 }
+            }
+            animate={settleImmediately ? 'settled' : letterControls}
+            variants={{ settled: { y: 0, rotate: 0, opacity: 1 } }}
+            transition={{
+              duration: settleImmediately ? 0 : 0.66,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            style={{ transformOrigin: '50% 0%' }}
+          >
             <div className="letter-head">
               <div>
                 <strong>TAJRI ANHAAR</strong>
@@ -154,7 +199,17 @@ export function ContactSection() {
                 {contactEmail}
               </div>
             </div>
-            <div className="letter-divider" />
+            <motion.div
+              className="letter-divider"
+              initial={reduceMotion ? false : { scaleX: 0 }}
+              animate={{ scaleX: settleImmediately || inView ? 1 : 0 }}
+              transition={{
+                duration: settleImmediately ? 0 : 0.48,
+                delay: settleImmediately ? 0 : 0.14,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              style={{ transformOrigin: 'left' }}
+            />
             <div className="letter-date">{today}</div>
             <label>
               Dear{' '}
@@ -238,16 +293,57 @@ export function ContactSection() {
             </div>
             <div className="letter-footer">
               <span>PRIVATE CORRESPONDENCE / 2026</span>
-              <button type="submit">
-                SEND LETTER <b>↗</b>
-              </button>
+              <motion.button
+                type="submit"
+                initial={false}
+                animate="rest"
+                whileHover={reduceMotion ? undefined : 'hover'}
+                whileTap={reduceMotion ? undefined : 'press'}
+                variants={{
+                  rest: { y: 0, scale: 1 },
+                  hover: { y: -1, scale: 1 },
+                  press: { y: 0, scale: 0.98 },
+                }}
+                transition={{ duration: reduceMotion ? 0 : 0.14 }}
+              >
+                SEND LETTER{' '}
+                <motion.b
+                  variants={{
+                    rest: { x: 0, y: 0 },
+                    hover: { x: 1.5, y: -1.5 },
+                    press: { x: 0.5, y: -0.5 },
+                  }}
+                  transition={{ duration: reduceMotion ? 0 : 0.14 }}
+                >
+                  ↗
+                </motion.b>
+              </motion.button>
             </div>
-            {status && (
-              <p className="letter-status" role="status">
-                {status}
-              </p>
-            )}
-          </form>
+            <div role="status" aria-atomic="true">
+              <AnimatePresence initial={false} mode="wait">
+                {status && (
+                  <motion.p
+                    key={status}
+                    className="letter-status"
+                    initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={
+                      reduceMotion
+                        ? { opacity: 1, y: 0, transition: { duration: 0 } }
+                        : {
+                            opacity: 0,
+                            y: -2,
+                            transition: { duration: 0.12 },
+                          }
+                    }
+                    transition={{ duration: reduceMotion ? 0 : 0.18 }}
+                  >
+                    {status}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.form>
         </div>
         <p className="contact-security">
           This form opens your own email application. No message is stored or

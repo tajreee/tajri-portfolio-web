@@ -4,9 +4,10 @@ import {
   LinkedinLogo,
   Pause,
   Play,
+  ArrowDown,
 } from '@phosphor-icons/react'
-import { useState } from 'react'
-import { motion } from 'motion/react'
+import { useRef, useState } from 'react'
+import { motion, useScroll, useSpring, useTransform } from 'motion/react'
 import { socialLinks } from '../../data/portfolio'
 import { Marquee } from '../common/Marquee'
 import { useReducedMotion } from '../common/useReducedMotion'
@@ -15,8 +16,19 @@ export function HeroSection() {
   const [portraitFailed, setPortraitFailed] = useState(false)
   const [marqueePaused, setMarqueePaused] = useState(false)
   const reduceMotion = useReducedMotion()
+  const posterRef = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: posterRef,
+    offset: ['start start', 'end start'],
+  })
+  const progress = useSpring(scrollYProgress, { stiffness: 110, damping: 28 })
+  const portraitY = useTransform(progress, [0, 1], [0, 110])
+  const portraitRotation = useTransform(progress, [0, 1], [0, -6])
+  const topTypeY = useTransform(progress, [0, 1], [0, -95])
+  const bottomTypeY = useTransform(progress, [0, 1], [0, 65])
   return (
     <section
+      ref={posterRef}
       className="hero-poster"
       aria-label="Tajri Anhaar portfolio introduction"
     >
@@ -79,44 +91,62 @@ export function HeroSection() {
         </button>
       )}
       <div className="marquee-layer marquee-layer-top">
-        <Marquee paused={marqueePaused} />
+        <motion.div
+          className="hero-type-drift"
+          style={{ y: reduceMotion ? 0 : topTypeY }}
+        >
+          <Marquee paused={marqueePaused} />
+        </motion.div>
       </div>
       <div className="marquee-layer marquee-layer-bottom">
-        <Marquee reverse paused={marqueePaused} />
+        <motion.div
+          className="hero-type-drift"
+          style={{ y: reduceMotion ? 0 : bottomTypeY }}
+        >
+          <Marquee reverse paused={marqueePaused} />
+        </motion.div>
       </div>
       <div className="portrait-wrap">
-        <div className="portrait-shadow" aria-hidden="true" />
         <motion.div
-          className={`portrait ${portraitFailed ? 'portrait-missing' : ''}`}
-          initial={reduceMotion ? false : { y: 28, rotate: -4 }}
-          animate={{ y: 0, rotate: 0 }}
-          transition={{ duration: 0.75 }}
+          className="hero-portrait-depth"
+          style={{
+            y: reduceMotion ? 0 : portraitY,
+            rotate: reduceMotion ? 0 : portraitRotation,
+          }}
         >
-          {!portraitFailed && (
-            <img
-              src="/assets/tajri-portrait.jpg"
-              alt="Close-up portrait of Tajri Mintahtihal Anhaar"
-              onError={() => setPortraitFailed(true)}
-            />
-          )}
-          {portraitFailed && (
-            <>
-              <strong>TA</strong>
-              <span>
-                ADD
-                <br />
-                PORTRAIT
-              </span>
-            </>
-          )}
+          <div className="portrait-shadow" aria-hidden="true" />
+          <motion.div
+            className={`portrait ${portraitFailed ? 'portrait-missing' : ''}`}
+            initial={reduceMotion ? false : { y: 28, rotate: -4 }}
+            animate={{ y: 0, rotate: 0 }}
+            transition={{ duration: 0.75 }}
+          >
+            {!portraitFailed && (
+              <img
+                src="/assets/tajri-portrait.jpg"
+                alt="Close-up portrait of Tajri Mintahtihal Anhaar"
+                onError={() => setPortraitFailed(true)}
+              />
+            )}
+            {portraitFailed && (
+              <>
+                <strong>TA</strong>
+                <span>
+                  ADD
+                  <br />
+                  PORTRAIT
+                </span>
+              </>
+            )}
+          </motion.div>
+          <motion.div
+            className="portrait-tape"
+            aria-hidden="true"
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: reduceMotion ? 0 : 0.4, duration: 0.2 }}
+          />
         </motion.div>
-        <motion.div
-          className="portrait-tape"
-          aria-hidden="true"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: reduceMotion ? 0 : 0.4, duration: 0.2 }}
-        />
       </div>
       <h1 className="hero-name">
         <motion.span
@@ -139,6 +169,16 @@ export function HeroSection() {
         <br />
         dibaca, dan dilanjutkan.
       </p>
+      <motion.a
+        className="hero-scroll-cue"
+        href="#about"
+        aria-label="Explore about Tajri"
+        whileHover={reduceMotion ? undefined : { y: 4 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+      >
+        <span>EXPLORE</span>
+        <ArrowDown size={18} />
+      </motion.a>
     </section>
   )
 }

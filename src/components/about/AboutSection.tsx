@@ -3,6 +3,7 @@ import { Pause, Play } from '@phosphor-icons/react'
 import { AnimatePresence, motion, useInView } from 'motion/react'
 import { usePageVisible } from '../common/usePageVisible'
 import { useReducedMotion } from '../common/useReducedMotion'
+import { InkHeading } from '../common/InkHeading'
 
 const portraitStyles = [
   {
@@ -52,6 +53,7 @@ function PortraitFrame({ image, label }: { image: string; label: string }) {
 export function AboutSection() {
   const [activeStyle, setActiveStyle] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [direction, setDirection] = useState(1)
   const sectionRef = useRef<HTMLElement>(null)
   const inView = useInView(sectionRef, { amount: 0.15 })
   const pageVisible = usePageVisible()
@@ -62,6 +64,7 @@ export function AboutSection() {
   useEffect(() => {
     if (!playing) return
     const interval = window.setInterval(() => {
+      setDirection(1)
       setActiveStyle((current) => (current + 1) % portraitStyles.length)
     }, 3000)
 
@@ -69,6 +72,7 @@ export function AboutSection() {
   }, [playing])
 
   const selectPortrait = (index: number) => {
+    setDirection(index >= activeStyle ? 1 : -1)
     setActiveStyle(index)
     setPaused(true)
   }
@@ -119,14 +123,28 @@ export function AboutSection() {
                 aria-labelledby={`portrait-tab-${activeStyle}`}
                 tabIndex={0}
               >
-                <AnimatePresence initial={false}>
+                <AnimatePresence initial={false} custom={direction}>
                   <motion.div
                     className="about-portrait-slide"
                     key={style.image}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: reduceMotion ? 0 : 0.24 }}
+                    custom={direction}
+                    variants={{
+                      enter: (way: number) => ({
+                        opacity: 0,
+                        x: reduceMotion ? 0 : way * 18,
+                        rotate: reduceMotion ? 0 : way * 1.2,
+                      }),
+                      read: { opacity: 1, x: 0, rotate: 0 },
+                      leave: (way: number) => ({
+                        opacity: 0,
+                        x: reduceMotion ? 0 : way * -18,
+                        rotate: reduceMotion ? 0 : way * -1.2,
+                      }),
+                    }}
+                    initial="enter"
+                    animate="read"
+                    exit="leave"
+                    transition={{ duration: reduceMotion ? 0 : 0.32 }}
                   >
                     <PortraitFrame image={style.image} label={style.label} />
                     <div className="about-portrait-caption">
@@ -183,11 +201,10 @@ export function AboutSection() {
               </span>
               <span>TAJRI ANHAAR</span>
             </div>
-            <h2>
-              Engineer by training.
-              <br />
-              <em>Builder by habit.</em>
-            </h2>
+            <InkHeading
+              first="Engineer by training."
+              second="Builder by habit."
+            />
             <div className="about-content-body">
               <p>
                 Saya menulis kode di dua sisi: backend untuk membangun endpoint
@@ -205,20 +222,48 @@ export function AboutSection() {
               <span>HOW I WORK</span>
               <strong>Pahami alurnya dulu, baru menulis kode.</strong>
             </div>
-            <div className="about-facts">
-              <div>
+            <motion.div
+              className="about-facts"
+              initial={reduceMotion ? false : 'ready'}
+              animate={reduceMotion ? 'read' : undefined}
+              whileInView="read"
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: reduceMotion ? 0 : 0.4 }}
+              variants={{
+                ready: {},
+                read: {
+                  transition: { staggerChildren: reduceMotion ? 0 : 0.08 },
+                },
+              }}
+            >
+              <motion.div
+                variants={{
+                  ready: { y: 16, opacity: 0.5 },
+                  read: { y: 0, opacity: 1 },
+                }}
+              >
                 <strong>3.77</strong>
                 <span>GPA / CUM LAUDE</span>
-              </div>
-              <div>
+              </motion.div>
+              <motion.div
+                variants={{
+                  ready: { y: 16, opacity: 0.5 },
+                  read: { y: 0, opacity: 1 },
+                }}
+              >
                 <strong>5</strong>
                 <span>MONTHS INDUSTRY EXPERIENCE</span>
-              </div>
-              <div>
+              </motion.div>
+              <motion.div
+                variants={{
+                  ready: { y: 16, opacity: 0.5 },
+                  read: { y: 0, opacity: 1 },
+                }}
+              >
                 <strong>40+</strong>
                 <span>REST ENDPOINTS</span>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
             <div className="about-content-footer">
               <span>THE PERSON BEHIND THE SYSTEM</span>
               <span>↘</span>
