@@ -1,34 +1,124 @@
-import { useState } from 'react'
-import { AnimatePresence, LayoutGroup, motion } from 'motion/react'
+import { useId, useRef, useState, type CSSProperties } from 'react'
+import { Pause, Play } from '@phosphor-icons/react'
+import {
+  AnimatePresence,
+  LayoutGroup,
+  motion,
+  useInView,
+  useIsPresent,
+} from 'motion/react'
 import { skillGroups } from '../../data/skills'
+import type { Skill } from '../../types/portfolio'
 import { useReducedMotion } from '../common/useReducedMotion'
+import { usePageVisible } from '../common/usePageVisible'
 import { InkHeading } from '../common/InkHeading'
+import './skills-paper.css'
+
+const skillPapers = skillGroups
+  .flatMap((group) =>
+    group.skills.map((skill) => ({ skill, category: group.name })),
+  )
+  .map((paper, index) => ({ ...paper, index }))
 
 function SkillMark({ icon, name }: { icon: string; name: string }) {
   const [failed, setFailed] = useState(false)
   return failed ? (
-    <span className="skill-fallback-mark">
+    <span className="press-skill-fallback">
       {name.slice(0, 2).toUpperCase()}
     </span>
   ) : (
     <img
-      src={`https://cdn.simpleicons.org/${icon}/55564f`}
+      src={`https://cdn.simpleicons.org/${icon}/253b30`}
       alt=""
+      width={42}
+      height={42}
+      loading="lazy"
+      decoding="async"
       onError={() => setFailed(true)}
     />
+  )
+}
+
+function SkillPaper({
+  skill,
+  category,
+  index,
+  paused,
+}: {
+  skill: Skill
+  category: string
+  index: number
+  paused: boolean
+}) {
+  const ref = useRef<HTMLElement>(null)
+  const inView = useInView(ref, { amount: 0.05, margin: '48px 0px' })
+  const present = useIsPresent()
+  const [held, setHeld] = useState(false)
+  const contextId = useId()
+  const paperStyle = {
+    '--paper-angle': `${[-7, 4, -3, 7, -5, 3, 6][index % 7]}deg`,
+    '--paper-shift-x': `${[-8, 5, -3, 8, 0, -5][index % 6]}px`,
+    '--paper-shift-y': `${[10, -4, 22, 2, 18, 8, 0, 16][index % 8]}px`,
+    '--paper-duration': `${4.8 + (index % 5) * 0.6}s`,
+    '--paper-delay': `${-(index % 7) * 0.85}s`,
+    '--paper-travel': `${8 + (index % 4)}px`,
+  } as CSSProperties
+
+  return (
+    <figure
+      ref={ref}
+      className="press-skill-inspect"
+      data-motion-paused={paused || !inView || !present}
+      data-held={held}
+      inert={!present}
+      aria-hidden={!present}
+      data-paper-tone={index % 4}
+      style={paperStyle}
+    >
+      <div className="press-skill-drift">
+        <button
+          type="button"
+          className="press-skill-piece"
+          aria-label={`Hold ${skill.name} paper`}
+          aria-pressed={held}
+          aria-describedby={contextId}
+          onClick={() => setHeld((current) => !current)}
+        >
+          <span className="press-skill-face">
+            <span className="press-skill-logo">
+              <SkillMark icon={skill.icon} name={skill.name} />
+            </span>
+            <span className="press-skill-name">{skill.name}</span>
+            {held && (
+              <Pause
+                className="press-skill-held-mark"
+                size={12}
+                aria-hidden="true"
+              />
+            )}
+          </span>
+        </button>
+      </div>
+      <figcaption className="press-skill-context" id={contextId}>
+        <span className="press-skill-category">{category}</span>{' '}
+        <span>{skill.used}</span>
+      </figcaption>
+    </figure>
   )
 }
 
 export function SkillsSection() {
   const [activeCategory, setActiveCategory] = useState('ALL')
   const reduceMotion = useReducedMotion()
-  const visibleGroups =
+  const pageVisible = usePageVisible()
+  const [paused, setPaused] = useState(false)
+  const visiblePapers =
     activeCategory === 'ALL'
-      ? skillGroups
-      : skillGroups.filter((group) => group.name === activeCategory)
+      ? skillPapers
+      : skillPapers.filter((paper) => paper.category === activeCategory)
 
   return (
-    <section className="skills-section" id="skills">
+    <section className="skills-section" id="skills" tabIndex={-1}>
       <div className="skills-grain" aria-hidden="true" />
       <div className="skills-shell">
         <div className="skills-heading">
@@ -71,12 +161,51 @@ export function SkillsSection() {
               ),
             )}
           </div>
-          <div className="skill-groups" id="skill-results">
-            <AnimatePresence initial={!reduceMotion} mode="popLayout">
-              {visibleGroups.map((group) => (
-                <motion.div
-                  className="skill-group"
-                  key={group.name}
+          <div className="press-skill-toolbar">
+            <p>
+              {reduceMotion ? (
+                'Motion reduced. The papers stay still.'
+              ) : (
+                <>
+                  <span className="press-skill-hover-hint">
+                    Hover to pause.{' '}
+                  </span>
+                  Tap or press Enter to hold a paper.
+                </>
+              )}
+            </p>
+            {!reduceMotion && (
+              <button
+                type="button"
+                className="press-skill-motion-toggle"
+                aria-label={
+                  paused
+                    ? 'Resume motion for floating skills'
+                    : 'Pause motion for floating skills'
+                }
+                data-paused={paused}
+                onClick={() => setPaused((current) => !current)}
+              >
+                {paused ? (
+                  <Play size={13} aria-hidden="true" />
+                ) : (
+                  <Pause size={13} aria-hidden="true" />
+                )}
+                {paused ? 'Resume motion' : 'Pause motion'}
+              </button>
+            )}
+          </div>
+          <ul
+            className="press-skill-field"
+            id="skill-results"
+            aria-label="Floating skill papers"
+            role="list"
+          >
+            <AnimatePresence initial={false} mode="popLayout">
+              {visiblePapers.map((paper) => (
+                <motion.li
+                  className="press-skill-slot"
+                  key={paper.skill.name}
                   layout={reduceMotion ? false : 'position'}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -86,68 +215,16 @@ export function SkillsSection() {
                   }}
                   transition={{ duration: reduceMotion ? 0 : 0.24 }}
                 >
-                  <div className="skill-group-label">
-                    <span>0{skillGroups.indexOf(group) + 1}</span>
-                    <strong>{group.name}</strong>
-                  </div>
-                  <div className="skill-grid">
-                    {group.skills.map((skill, index) => (
-                      <motion.article
-                        className="skill-card"
-                        key={skill.name}
-                        initial={
-                          reduceMotion
-                            ? false
-                            : {
-                                y: 22,
-                                rotate: index % 2 ? 2 : -2,
-                                opacity: 0.65,
-                              }
-                        }
-                        animate={
-                          reduceMotion
-                            ? { y: 0, rotate: 0, opacity: 1 }
-                            : undefined
-                        }
-                        whileInView={{ y: 0, rotate: 0, opacity: 1 }}
-                        viewport={{ once: true, amount: 0.15 }}
-                        whileHover={
-                          reduceMotion
-                            ? undefined
-                            : {
-                                y: -9,
-                                rotate: -1.5,
-                                transition: { duration: 0.2, delay: 0 },
-                              }
-                        }
-                        transition={{
-                          duration: reduceMotion ? 0 : 0.45,
-                          delay: reduceMotion ? 0 : index * 0.035,
-                        }}
-                      >
-                        <div className="skill-card-top">
-                          <span>{String(index + 1).padStart(2, '0')}</span>
-                          <span>ACTIVE</span>
-                        </div>
-                        <div className="skill-icon">
-                          <SkillMark icon={skill.icon} name={skill.name} />
-                        </div>
-                        <h3>{skill.name}</h3>
-                        <p>{skill.used}</p>
-                        <span className="skill-card-arrow">↗</span>
-                      </motion.article>
-                    ))}
-                  </div>
-                </motion.div>
+                  <SkillPaper
+                    {...paper}
+                    paused={paused || reduceMotion || !pageVisible}
+                  />
+                </motion.li>
               ))}
             </AnimatePresence>
-          </div>
+          </ul>
           <p className="visually-hidden" role="status">
-            {visibleGroups.reduce(
-              (total, group) => total + group.skills.length,
-              0,
-            )}{' '}
-            skills shown
+            {visiblePapers.length} skills shown
             {activeCategory === 'ALL'
               ? ' across all categories'
               : ` in ${activeCategory.toLowerCase()}`}

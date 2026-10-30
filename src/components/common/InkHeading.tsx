@@ -10,7 +10,11 @@ export function InkHeading({
   second: string
 }) {
   const ref = useRef<HTMLHeadingElement>(null)
-  const inView = useInView(ref, { once: true, amount: 0.25 })
+  const inView = useInView(ref, {
+    once: true,
+    amount: 0.1,
+    margin: '120px 0px',
+  })
   const reduceMotion = useReducedMotion()
   const revealed = inView || reduceMotion
 
@@ -19,8 +23,8 @@ export function InkHeading({
       <span className="ink-line" aria-hidden="true">
         <motion.span
           initial={false}
-          animate={{ y: revealed ? '0%' : '105%' }}
-          transition={{ duration: reduceMotion ? 0 : 0.65 }}
+          animate={{ opacity: revealed ? 1 : 0.88 }}
+          transition={{ duration: reduceMotion ? 0 : 0.28 }}
         >
           {first}
         </motion.span>
@@ -28,10 +32,10 @@ export function InkHeading({
       <span className="ink-line" aria-hidden="true">
         <motion.em
           initial={false}
-          animate={{ y: revealed ? '0%' : '105%' }}
+          animate={{ opacity: revealed ? 1 : 0.88 }}
           transition={{
-            duration: reduceMotion ? 0 : 0.65,
-            delay: revealed && !reduceMotion ? 0.09 : 0,
+            duration: reduceMotion ? 0 : 0.28,
+            delay: revealed && !reduceMotion ? 0.04 : 0,
           }}
         >
           {second}

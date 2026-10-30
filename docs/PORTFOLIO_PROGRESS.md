@@ -4,11 +4,11 @@ Dokumentasi progres dan keputusan desain untuk prototype portfolio web Tajri Min
 
 ## Status
 
-Versi release: `v1.1.0`.
+Versi release: `v1.2.0`.
 
-Pembaruan terakhir: 29 Oktober 2026.
+Pembaruan terakhir: 30 Oktober 2026.
 
-Frontend portfolio sudah memiliki tujuh section utama, koreografi scroll berbasis `motion/react`, dialog aksesibel, dan dukungan reduced motion yang mengikuti perubahan preferensi sistem. Build production berhasil.
+Frontend portfolio sudah memiliki tujuh section utama, tema Studio Cetak, navbar sticky, footer colophon, kertas Skills melayang, dan portrait asli. Stabilitas scroll sudah diperbaiki tanpa scroll hijacking. Docker multi-stage dan pipeline Jenkins disiapkan untuk distribusi image runtime berisi hasil build statis saja.
 
 Section yang sudah tersedia:
 
@@ -20,9 +20,18 @@ Section yang sudah tersedia:
 6. Skills
 7. Contact
 
-Footer, navigation, dan penyediaan foto portrait/project masih menjadi pekerjaan berikutnya. Form contact tetap menggunakan `mailto:`, bukan pengiriman melalui backend.
+Asset project dan automated test suite permanen masih menjadi pekerjaan berikutnya. Foto Hero dan tiga portrait About sudah tersedia. Form contact tetap menggunakan `mailto:`, bukan pengiriman melalui backend.
 
 ## Riwayat Release
+
+### v1.2.0 / 30 Oktober 2026
+
+- Tema Studio Cetak, navbar/footer responsif, dan kertas Skills melayang dengan pause/hold yang aksesibel.
+- Perbaikan rendering/scroll, judul yang selalu terbaca, dan pemisahan intent swipe horizontal dari scroll vertikal.
+- PNG asli Hero/About terhubung dengan crop setengah badan, titik fokus per pose, dan decoding gambar async.
+- Docker multi-stage dengan base image dipin digest; runtime Nginx non-root hanya membawa `dist/` dan konfigurasi web server.
+- Pipeline Jenkins build/smoke/archive, publish registry berdasarkan commit/build, dan deploy opsional lewat SSH menggunakan digest image serta pemeriksaan health/rollback.
+- Publish/deploy Jenkins nonaktif secara default sampai registry, kredensial, dan server dikonfigurasi. Belum ada klaim deploy ke server produksi.
 
 ### v1.1.0 / 29 Oktober 2026
 
@@ -57,6 +66,15 @@ Preview hasil build:
 npm run preview
 ```
 
+Build dan jalankan runtime Docker yang sama dengan CI:
+
+```bash
+docker build -t tajri-portfolio-web:local .
+docker compose up -d --wait
+```
+
+Alamat lokal: `http://127.0.0.1:8081`, terpisah dari port Jenkins 8080. Panduan Jenkins, registry, server SSH, reverse proxy/TLS, dan rollback ada di [DEPLOYMENT.md](DEPLOYMENT.md). Server tidak perlu clone repository, menginstal Node/npm, atau menyimpan `node_modules`.
+
 ## Stack Teknis
 
 - React 19
@@ -68,18 +86,19 @@ npm run preview
 
 ## Arah Visual
 
-Bahasa visual yang digunakan adalah **grayscale paper archive / torn-paper portfolio**.
+Bahasa visual yang digunakan adalah **Studio Cetak / torn-paper portfolio**, melanjutkan konsep paper archive dari release awal.
 
 Karakter visual:
 
-- Background warm gray dan charcoal.
+- Background ivory, sage, hijau tinta, dan rust yang memberi ritme antar-section.
+- Motif halftone, tanda registrasi cetak, kertas bergaris, dan lipatan amplop di luar area baca.
 - Paper texture dan grain.
 - Torn paper clipping melalui `clip-path`.
 - Push pin, tape, shadow, dan bulletin-board material.
 - Tipografi display `Space Grotesk`.
 - Metadata teknis menggunakan `DM Mono`.
-- Aksen utama sage yellow: `#b6b580`.
-- Warna pendukung rust dan muted gray-green digunakan secara terbatas.
+- Warna utama berasal dari token `--press-*` di `src/print-studio.css`.
+- Aksen rust, olive, dan gold dipakai untuk penekanan serta kontrol interaktif.
 
 Keputusan visual utama:
 
@@ -89,13 +108,24 @@ Keputusan visual utama:
 - Konten dibuat seperti artefak fisik: poster, lembar akademik, case file, specimen, dan surat.
 - Detail teks tetap dipertahankan, tetapi ditata sebagai dokumen visual agar tidak terasa seperti CV panjang.
 
+## Navbar dan Footer
+
+- Navbar sticky berada di luar `main`, dengan wordmark TA dan enam anchor: About, Education, Experience, Work, Skills, Contact.
+- Penanda section aktif memakai `IntersectionObserver` pada garis baca di bawah navbar, bukan React state update per frame scroll.
+- Pada lebar sampai 1040 px, navigasi menjadi menu disclosure beranimasi yang bisa ditutup lewat Escape, klik luar, perpindahan fokus, pemilihan anchor, atau resize ke desktop. Menu tidak mengunci scroll atau menjadi modal.
+- Skip link menuju `#main-content`; Hero memakai `#home`. Target section dapat menerima fokus setelah navigasi anchor.
+- `scroll-padding-top` memberi ruang untuk navbar pada anchor maupun kontrol yang mendapat fokus. Native hash/history tetap dipertahankan; smooth scrolling dinonaktifkan saat reduced motion aktif.
+- Footer bergaya colophon berisi identitas, navigasi ulang, email, LinkedIn, copyright tahun otomatis, dan Back to top.
+- Link GitHub dan Instagram belum dimasukkan ke footer karena data saat ini masih berupa URL generik; link Hero lama tidak diubah.
+- Komponen navbar/footer tidak memakai native dialog, sehingga tidak mengubah focus containment dan scroll lock dialog proyek atau signature.
+
 ## Hero Section
 
 Hero menjadi poster portrait utama.
 
 Fitur:
 
-- Foto close-up Tajri di tengah.
+- Foto Tajri dengan crop sekitar setengah badan di tengah.
 - Marquee teks bergerak ke kiri dan kanan di belakang portrait.
 - Role di kiri atas.
 - Social links di kanan atas:
@@ -112,22 +142,26 @@ dibaca, dan dilanjutkan.
 
 - Paper grain.
 - Torn edge atas dan bawah.
-- Portrait fallback jika foto belum tersedia.
+- Portrait fallback jika foto gagal dimuat.
 - Reduced-motion support: marquee berhenti ketika `prefers-reduced-motion: reduce` aktif.
 
 Asset Hero:
 
 ```text
-public/assets/tajri-portrait.jpg
+public/assets/tajri-potrait-hero.png
 ```
 
 About portrait assets:
 
 ```text
-public/assets/about-portrait-builder.jpg
-public/assets/about-portrait-explainer.jpg
-public/assets/about-portrait-observer.jpg
+public/assets/tajri-potrait-builder.png
+public/assets/tajri-potrait-explainer.png
+public/assets/tajri-potrait-observer.png
 ```
+
+Keempat PNG asli berukuran 1024 x 1536 dan tidak diubah. Crop hanya dilakukan pada elemen gambar, bukan wrapper animasi atau ukuran frame: Hero memakai zoom 1.30 desktop / 1.24 mobile dengan fokus atas untuk menjaga kepala tetap utuh dan mengurangi bagian kaki. About memakai zoom 1.12 serta titik fokus horizontal per foto. Nuansa grayscale tetap dipertahankan, tetapi multiply dan reduksi brightness lama tidak diterapkan pada foto baru agar wajah tidak terlalu gelap.
+
+Hero memakai fetch priority tinggi dan async decoding; portrait About dimuat lazy dengan dimensi eksplisit agar pergantian foto tidak mengubah layout frame.
 
 About Me berganti otomatis setiap tiga detik saat terlihat dan tab browser aktif. Hover, fokus, atau pemilihan manual menjedakan slideshow sampai tombol Play ditekan. Autoplay dinonaktifkan saat reduced motion aktif.
 
@@ -291,7 +325,7 @@ Jika asset tidak ditemukan, placeholder otomatis menampilkan nomor dan nama proj
 
 ## Skills Section
 
-Skills dibuat sebagai **technical specimen wall** dengan background warm paper yang konsisten dengan Hero dan Experience.
+Skills dibuat sebagai **floating paper field**: logo berada pada potongan kertas sobek kecil yang melayang vertikal di atas kanvas hijau tinta Studio Cetak, menggantikan kartu kotak.
 
 Kategori:
 
@@ -300,25 +334,27 @@ Kategori:
 - Data & API
 - Practice & Tools
 
-Setiap skill ditampilkan sebagai kartu specimen berisi:
+Setiap potongan kertas berisi:
 
-- Logo teknologi.
-- Nama skill.
-- Status `ACTIVE`.
-- Konteks project atau penggunaan.
-- Kategori.
-- Hover elevation dan perubahan warna.
+- Logo teknologi dan nama skill terlihat tanpa hover; warna kertas, kemiringan, jarak, dan fase gerak dibuat bervariasi secara deterministik.
+- Konteks project serta kategori muncul saat hover, fokus, atau kertas ditahan. Pada layar kecil, perangkat tanpa hover, dan reduced motion, konteks selalu terlihat.
+- Hover/fokus menjedakan animasi pada posisi saat itu, tanpa mengembalikan transform ke posisi awal.
+- Klik, tap, atau Enter menahan/melepas kertas melalui toggle yang mendukung `aria-pressed`.
 - Fallback inisial dua huruf jika logo gagal dimuat.
+
+Gerakan memakai CSS transform dan `animation-play-state`, sedangkan Motion menangani fade/layout saat filter berubah. Loop dijeda per kertas ketika di luar/menjauh dari viewport, saat tab browser tidak aktif, atau melalui kontrol Pause/Resume motion. Reduced motion menonaktifkan loop dan perpindahan layout. Hover tidak memperbesar dimensi kertas.
+
+Hamparan memakai layout auto-height dengan 5 kolom desktop, 4/3 kolom tablet, dan 2 kolom di layar sempit. Namespace `press-skill-*` terpisah dari CSS specimen/orbit lama agar tidak menghidupkan kembali aturan legacy.
 
 Logo skill menggunakan Simple Icons CDN:
 
 ```text
-https://cdn.simpleicons.org/{icon-name}/55564f
+https://cdn.simpleicons.org/{icon-name}/253b30
 ```
 
 Jika logo gagal dimuat, fallback otomatis menggunakan dua huruf awal nama skill.
 
-Filter kategori tersedia pada bagian atas section.
+Filter kategori dan pengumuman jumlah hasil tetap tersedia: ALL menampilkan 20 kertas, masing-masing kategori menampilkan lima. Logo dimuat secara lazy dengan ukuran tetap.
 
 ## Contact Section
 
@@ -416,10 +452,14 @@ Untuk form server-side di masa depan, gunakan:
 public/
 └── assets/
     ├── logo-inditech.png
-    └── logo-universitas-indonesia.png
+    ├── logo-universitas-indonesia.png
+    ├── tajri-potrait-hero.png
+    ├── tajri-potrait-builder.png
+    ├── tajri-potrait-explainer.png
+    └── tajri-potrait-observer.png
 ```
 
-Struktur di atas menunjukkan asset yang tersedia saat release `v1.1.0`. Foto Hero, tiga portrait About, dan gambar project belum tersedia; masing-masing memakai fallback. Path asset yang diharapkan tercantum pada section terkait.
+Struktur di atas menunjukkan asset lokal yang tersedia saat ini. Foto Hero dan About memakai nama file `potrait` sesuai unggahan asli. Gambar project belum tersedia dan tetap memakai fallback.
 
 ## Struktur Komponen
 
@@ -428,6 +468,8 @@ src/
 ├── App.tsx
 ├── main.tsx
 ├── styles.css
+├── print-studio.css
+├── site-chrome.css
 ├── types/
 │   └── portfolio.ts
 ├── data/
@@ -441,6 +483,9 @@ src/
     │   ├── Marquee.tsx
     │   ├── usePageVisible.ts
     │   └── useReducedMotion.ts
+    ├── layout/
+    │   ├── SiteHeader.tsx
+    │   └── SiteFooter.tsx
     ├── hero/
     │   └── HeroSection.tsx
     ├── about/
@@ -452,7 +497,8 @@ src/
     ├── projects/
     │   └── SelectedWorkSection.tsx
     ├── skills/
-    │   └── SkillsSection.tsx
+    │   ├── SkillsSection.tsx
+    │   └── skills-paper.css
     └── contact/
         └── ContactSection.tsx
 
@@ -460,16 +506,18 @@ public/assets/
 package.json
 ```
 
-`App.tsx` berfungsi sebagai composition root, menyediakan `MotionConfig`, dan menampilkan progres membaca. Data portfolio dipisahkan ke `src/data`, sedangkan domain type berada di `src/types`.
+`App.tsx` berfungsi sebagai composition root, menyediakan `MotionConfig`, dan menampilkan progres membaca. Navbar dan footer menjadi sibling dari `main` agar landmark banner/contentinfo tetap semantik. Data portfolio dan `sectionLinks` bersama dipisahkan ke `src/data`, sedangkan domain type berada di `src/types`.
 
 Pembagian tanggung jawab:
 
+- `SiteHeader`: navigasi sticky, scrollspy, skip link, dan disclosure mobile.
+- `SiteFooter`: colophon, navigasi sekunder, kontak, dan anchor kembali ke atas.
 - `HeroSection`: poster hero, portrait, social links, dan marquee.
 - `AboutSection`: tiga gaya portrait yang dapat dipilih, portrait fallback, dan content landscape About Me.
 - `EducationSection`: academic record dan wall clipping.
 - `ExperienceSection`: work-log timeline, record internship, dan evaluasi.
 - `SelectedWorkSection`: carousel project, project image fallback, popup detail, dan stack marks.
-- `SkillsSection`: filter kategori, skill cards, dan logo fallback.
+- `SkillsSection`: filter kategori, kertas skill melayang, kontrol pause/hold, dan logo fallback.
 - `ContactSection`: letter form, validasi lokal, mailto, dan signature canvas modal.
 - `Marquee`: helper visual yang digunakan oleh Hero.
 - `AnimatedDialog`: portal/native dialog, transisi, scroll lock, dan pemulihan fokus.
@@ -478,26 +526,41 @@ Pembagian tanggung jawab:
 
 ## Catatan Teknis dan Pekerjaan Berikutnya
 
-- Tambahkan footer jika struktur halaman sudah final.
-- Tambahkan navigation setelah semua section disetujui.
 - Pastikan link Instagram dan GitHub diganti dengan URL asli.
-- Tambahkan foto Hero, tiga portrait About, dan asset project jika tersedia.
+- Tambahkan asset project jika tersedia.
+- Pertimbangkan versi WebP/AVIF portrait setelah komposisi foto disetujui, tanpa menimpa PNG asli.
 - Pertimbangkan self-hosting font untuk production.
-- Pertimbangkan lazy-loading logo skill eksternal atau menggantinya dengan asset lokal.
+- Pertimbangkan mengganti logo skill eksternal dengan asset lokal untuk mengurangi ketergantungan CDN.
 - Tambahkan automated test suite permanen untuk interaksi dan regresi visual.
 - Jalankan Lighthouse setelah konten dan asset final tersedia.
 - Pertimbangkan lazy-loading library yang tidak digunakan untuk mengurangi dependency bundle.
 
 ## Verifikasi Terakhir
 
+### Docker dan Jenkins
+
+Build Docker multi-stage release `1.2.0` berhasil dari `npm ci` sampai image Nginx. Runtime Compose healthy, non-root `101:101`, read-only dengan tmpfs, serta tidak membawa Node/npm/source aplikasi. Sembilan file statis berukuran sekitar 9 MiB; HTTP health/index, gzip, cache, SPA fallback, dan aset 404 diperiksa. Helper deploy dan shell Jenkins diuji dengan mock/syntax checks; job Jenkins nyata, push registry, dan server produksi masih menunggu konfigurasi tujuan. Detail ada di [DEPLOYMENT.md](DEPLOYMENT.md).
+
+### Portrait Hero dan About
+
+PNG Hero dan ketiga pose About diperiksa pada viewport 1440 x 1000, 390 x 844, 320 x 740, 820 x 1000, dan 844 x 430. Skenario mencakup keberhasilan decode/resolusi 1024 x 1536, headroom dan posisi wajah dalam crop, tidak ada request ke JPG lama, frame About tidak berubah ukuran saat berpindah pose, autoplay/manual selector, reduced motion, serta tidak ada horizontal overflow. Build produksi berhasil dan PNG asli tetap tidak diubah.
+
+### Kertas Skill Melayang
+
+Pemeriksaan Edge headless pada 1440, 820, 744, 390, dan 320 px mencakup gerak vertikal nyata, freeze/resume clock tanpa reset saat hover/fokus, hold melalui keyboard/touch, pause global yang bertahan saat filter berubah, penghentian saat tab tersembunyi/offscreen, live reduced motion, fallback logo, 20/lima hasil filter, keunikan ID, serta kertas yang tidak saling bertumpuk atau memicu horizontal overflow. Navbar/footer dan navigasi anchor tetap diperiksa terpisah.
+
+### Navbar dan Footer
+
+Pemeriksaan browser mencakup desktop 1440 px, mobile 390 px, narrow/reduced-motion 320 px, tablet 820 px, dan landscape 844 x 430 px. Skenario: seluruh anchor, indikator aktif, deep link langsung, browser Back, skip link, fokus target, Escape/klik luar/Tab pada disclosure, resize menu ke desktop, back-to-top, overflow, dan kontras teks. Regresi dialog proyek, signature canvas, form persistence, serta carousel tetap diperiksa.
+
 ### Koreografi Scroll
 
-- Hero memakai scroll progress yang dihaluskan spring untuk memisahkan gerak portrait dan dua lapisan marquee. Tombol Explore menuju About, dan garis tipis di atas halaman menunjukkan progres membaca.
-- `InkHeading` membuka judul per baris seperti teks yang muncul dari tepi kertas. Urutan hanya berjalan sekali, bukan menyembunyikan judul setiap kali pengguna kembali ke section.
+- Hero memakai scroll progress langsung dengan jarak parallax lebih kecil, tanpa spring yang membuat portrait terus menyusul setelah scroll berhenti. Tombol Explore menuju About, dan garis tipis di atas halaman mengikuti progres membaca secara langsung.
+- `InkHeading` selalu terbaca sejak awal, dengan perubahan opacity singkat yang dipicu sebelum masuk viewport. Teks tidak lagi dipindah seluruhnya keluar dari mask selama entrance.
 - Academic record bergeser ke papan; cap gelar dan evaluasi menekan saat cap itu sendiri terlihat. Observer menargetkan header/cap pendek agar tetap bekerja pada dokumen mobile yang tinggi.
 - Timeline pengalaman terisi berdasarkan posisi scroll tanpa mengubah ukuran dot atau label NOW.
-- Tali proyek terbentang, lalu lembar case file menetap. Ayunan spring merespons scroll, drag, dan tombol carousel. State kedatangan disinkronkan antar-copy agar loop tidak memutar ulang entrance; hanya lembar di sekitar viewport yang mengikuti sway.
-- Specimen skill masuk berurutan singkat dan terangkat saat diinspeksi. Filter dan modal mempertahankan transisi keluar-masuk.
+- Tali proyek terbentang, lalu lembar case file menetap. Sway scroll mengikuti posisi secara langsung dengan sudut kecil; spring dipakai untuk drag dan tombol carousel. State kedatangan disinkronkan antar-copy agar loop tidak memutar ulang entrance; hanya lembar di sekitar viewport yang mengikuti sway.
+- Kertas skill melayang vertikal dengan fase berbeda dan diam saat hover/fokus. Filter dan modal mempertahankan transisi keluar-masuk.
 - Surat kontak diletakkan sekali dan garis pembatas tergambar. Fokus pertama langsung menyelesaikan gerakan surat; isi form dan canvas tidak dianimasikan saat digunakan.
 - Reduced motion punya fallback CSS selain pengaturan Motion, sehingga transform berbasis MotionValue juga langsung dinetralkan saat preferensi sistem berubah.
 
@@ -507,7 +570,7 @@ Integrasi motion mempertahankan visual paper archive dan menggunakan dependency 
 
 - Hero: portrait masuk seperti lembar yang ditempel, disusul tape dan nama; marquee memiliki kontrol jeda dan berhenti saat di luar viewport.
 - About: crossfade portrait, selector keyboard dengan Arrow/Home/End, serta kontrol Play/Pause.
-- Skills: indikator filter bergerak dan transisi posisi kelompok; nomor kategori tetap konsisten saat difilter.
+- Skills: indikator filter bergerak, transisi posisi kertas, pause/resume tanpa reset, serta konteks pemakaian untuk hover, keyboard, dan touch.
 - Modal project dan signature: `AnimatedDialog` memakai portal dan native `<dialog>`, transisi masuk/keluar, Escape, focus containment, focus restoration, dan scroll lock.
 - `MotionConfig` dan autoplay mengikuti perubahan preferensi reduced motion tanpa reload.
 - Override responsif ditempatkan setelah aturan desktop agar layout mobile tidak tertimpa.
@@ -515,6 +578,20 @@ Integrasi motion mempertahankan visual paper archive dan menggunakan dependency 
 Verifikasi release menggunakan Edge headless pada 320, 390, 820, 1440, dan 2560 px: filter, kontrol keyboard, carousel looping, modal, signature canvas, form persistence, reduced motion, dan horizontal overflow. Koreografi scroll juga diperiksa pada desktop/mobile, termasuk touch scrolling, timeline progress, cap dokumen, konsistensi copy carousel, dan penghentian gerak surat saat fokus.
 
 Pemeriksaan browser saat ini memakai skrip verifikasi lokal di direktori sementara, belum berupa automated test suite permanen dalam repository. Tidak ada error JavaScript yang ditemukan pada skenario tersebut.
+
+### Stabilitas Scroll
+
+Keluhan scroll terasa ringan/berat diperiksa pada build produksi. Tidak ditemukan wheel/touch hijacking atau scroll snap. Input wheel identik menghasilkan 480 px di seluruh tujuh section sebelum dan sesudah perbaikan; perbedaannya berada pada rendering dan gerakan visual, bukan pengali kecepatan scroll.
+
+- Lapisan noise SVG procedural dan blend pada kanvas/dokumen aktif diganti tile PNG 16 x 16 yang diulang, mempertahankan tekstur kertas tanpa filter full-size.
+- Judul langsung terlihat; parallax Hero diperkecil dan tidak memakai lag spring. Progress bar juga mengikuti posisi scroll langsung.
+- Carousel mendeteksi intent horizontal setelah threshold 8 px. Gesture vertikal tidak memindahkan track atau menangkap pointer; offset drag disimpan dalam ref dan ditulis langsung ke track, tanpa rekonsiliasi 21 sheet pada setiap pointer move.
+- Minimum tinggi section/portrait memakai viewport stabil `svh` untuk menghindari perubahan ukuran akibat browser toolbar mobile. Input mobile minimal 16 px untuk menghindari focus zoom pada iOS.
+- Perhitungan observer navbar dibatasi ke margin yang valid dan resize dibatch satu frame. Scroll lock dialog serta kebebasan zoom pengguna tetap dipertahankan.
+
+Uji Edge headless 1440 x 1000 dengan CPU throttling 4x, input dan urutan section yang sama: p95 interval frame Experience berubah dari 116.9 ms menjadi 33.4 ms; Work dari 83.3 ms menjadi 33.4 ms. Ini pengukuran lokal terkontrol, bukan jaminan FPS untuk semua perangkat.
+
+Regresi desktop/mobile juga memeriksa wheel 120 px per section, halaman tidak melanjutkan scroll tanpa input, gesture vertikal/diagonal di atas carousel, drag pendek/snap-back, drag horizontal, klik sheet, looping, anchor/keyboard, decode tile, heading yang terbaca sebelum reveal, reduced motion, dan animasi kertas Skills. Filter Skills tetap mengubah panjang hasil secara eksplisit; tidak ditambah area kosong besar atau scroll snapping untuk menahan pengguna.
 
 Perintah yang digunakan:
 

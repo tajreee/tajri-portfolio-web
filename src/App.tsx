@@ -1,4 +1,4 @@
-import { motion, MotionConfig, useScroll, useSpring } from 'motion/react'
+import { motion, MotionConfig, useScroll } from 'motion/react'
 import { useReducedMotion } from './components/common/useReducedMotion'
 import { ContactSection } from './components/contact/ContactSection'
 import { AboutSection } from './components/about/AboutSection'
@@ -7,14 +7,12 @@ import { ExperienceSection } from './components/experience/ExperienceSection'
 import { HeroSection } from './components/hero/HeroSection'
 import { SelectedWorkSection } from './components/projects/SelectedWorkSection'
 import { SkillsSection } from './components/skills/SkillsSection'
+import { SiteHeader } from './components/layout/SiteHeader'
+import { SiteFooter } from './components/layout/SiteFooter'
 
 function App() {
   const reduceMotion = useReducedMotion()
   const { scrollYProgress } = useScroll()
-  const readingProgress = useSpring(scrollYProgress, {
-    stiffness: 150,
-    damping: 30,
-  })
   return (
     <MotionConfig
       reducedMotion={reduceMotion ? 'always' : 'never'}
@@ -24,10 +22,11 @@ function App() {
         <motion.div
           className="reading-progress"
           aria-hidden="true"
-          style={{ scaleX: readingProgress }}
+          style={{ scaleX: scrollYProgress }}
         />
       )}
-      <main className="hero-page">
+      <SiteHeader />
+      <main className="hero-page" id="main-content" tabIndex={-1}>
         <HeroSection />
         <AboutSection />
         <EducationSection />
@@ -36,6 +35,7 @@ function App() {
         <SkillsSection />
         <ContactSection />
       </main>
+      <SiteFooter />
     </MotionConfig>
   )
 }

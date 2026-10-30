@@ -156,7 +156,7 @@ export function ContactSection() {
     setStatus('Your email app is opening with the letter prepared.')
   }
   return (
-    <section className="contact-section" id="contact">
+    <section className="contact-section" id="contact" tabIndex={-1}>
       <div className="contact-grain" aria-hidden="true" />
       <div className="contact-shell">
         <div className="contact-heading">

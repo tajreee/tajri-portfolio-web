@@ -9,21 +9,32 @@ const portraitStyles = [
   {
     label: 'THE BUILDER',
     note: 'BACKEND / FRONTEND',
-    image: '/assets/about-portrait-builder.jpg',
+    image: '/assets/tajri-potrait-builder.png',
+    position: '50% 0%',
   },
   {
     label: 'THE EXPLAINER',
     note: 'TEACHING / COLLABORATION',
-    image: '/assets/about-portrait-explainer.jpg',
+    image: '/assets/tajri-potrait-explainer.png',
+    position: '51% 0%',
   },
   {
     label: 'THE OBSERVER',
     note: 'SYSTEMS / DETAILS',
-    image: '/assets/about-portrait-observer.jpg',
+    image: '/assets/tajri-potrait-observer.png',
+    position: '53% 0%',
   },
 ]
 
-function PortraitFrame({ image, label }: { image: string; label: string }) {
+function PortraitFrame({
+  image,
+  label,
+  position,
+}: {
+  image: string
+  label: string
+  position: string
+}) {
   const [failed, setFailed] = useState(false)
   return (
     <div
@@ -32,7 +43,13 @@ function PortraitFrame({ image, label }: { image: string; label: string }) {
       {!failed && (
         <img
           src={image}
+          className="about-portrait-image"
           alt={`${label} portrait of Tajri Mintahtihal Anhaar`}
+          width={1024}
+          height={1536}
+          loading="lazy"
+          decoding="async"
+          style={{ objectPosition: position, transformOrigin: position }}
           onError={() => setFailed(true)}
         />
       )}
@@ -96,7 +113,12 @@ export function AboutSection() {
   }
 
   return (
-    <section ref={sectionRef} className="about-section" id="about">
+    <section
+      ref={sectionRef}
+      className="about-section"
+      id="about"
+      tabIndex={-1}
+    >
       <div className="about-grain" aria-hidden="true" />
       <div className="about-shell">
         <div className="about-heading">
@@ -146,7 +168,11 @@ export function AboutSection() {
                     exit="leave"
                     transition={{ duration: reduceMotion ? 0 : 0.32 }}
                   >
-                    <PortraitFrame image={style.image} label={style.label} />
+                    <PortraitFrame
+                      image={style.image}
+                      label={style.label}
+                      position={style.position}
+                    />
                     <div className="about-portrait-caption">
                       <span>{style.label}</span>
                       <span>{style.note}</span>

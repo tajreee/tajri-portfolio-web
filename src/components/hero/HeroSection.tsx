@@ -7,7 +7,7 @@ import {
   ArrowDown,
 } from '@phosphor-icons/react'
 import { useRef, useState } from 'react'
-import { motion, useScroll, useSpring, useTransform } from 'motion/react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { socialLinks } from '../../data/portfolio'
 import { Marquee } from '../common/Marquee'
 import { useReducedMotion } from '../common/useReducedMotion'
@@ -21,15 +21,16 @@ export function HeroSection() {
     target: posterRef,
     offset: ['start start', 'end start'],
   })
-  const progress = useSpring(scrollYProgress, { stiffness: 110, damping: 28 })
-  const portraitY = useTransform(progress, [0, 1], [0, 110])
-  const portraitRotation = useTransform(progress, [0, 1], [0, -6])
-  const topTypeY = useTransform(progress, [0, 1], [0, -95])
-  const bottomTypeY = useTransform(progress, [0, 1], [0, 65])
+  const portraitY = useTransform(scrollYProgress, [0, 1], [0, 48])
+  const portraitRotation = useTransform(scrollYProgress, [0, 1], [0, -2])
+  const topTypeY = useTransform(scrollYProgress, [0, 1], [0, -40])
+  const bottomTypeY = useTransform(scrollYProgress, [0, 1], [0, 28])
   return (
     <section
       ref={posterRef}
       className="hero-poster"
+      id="home"
+      tabIndex={-1}
       aria-label="Tajri Anhaar portfolio introduction"
     >
       <div className="paper-grain" aria-hidden="true" />
@@ -123,8 +124,13 @@ export function HeroSection() {
           >
             {!portraitFailed && (
               <img
-                src="/assets/tajri-portrait.jpg"
-                alt="Close-up portrait of Tajri Mintahtihal Anhaar"
+                className="hero-portrait-image"
+                src="/assets/tajri-potrait-hero.png"
+                alt="Half-body portrait of Tajri Mintahtihal Anhaar"
+                width={1024}
+                height={1536}
+                fetchPriority="high"
+                decoding="async"
                 onError={() => setPortraitFailed(true)}
               />
             )}
