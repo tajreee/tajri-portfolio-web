@@ -4,11 +4,11 @@ Dokumentasi progres dan keputusan desain untuk prototype portfolio web Tajri Min
 
 ## Status
 
-Versi release: `v1.1.0`.
+Versi release: `v1.2.0`.
 
-Pembaruan terakhir: 29 Oktober 2026.
+Pembaruan terakhir: 30 Oktober 2026.
 
-Frontend portfolio sudah memiliki tujuh section utama, koreografi scroll berbasis `motion/react`, dialog aksesibel, dan dukungan reduced motion yang mengikuti perubahan preferensi sistem. Pengembangan setelah release `v1.1.0` memakai tema Studio Cetak yang telah disetujui, navbar sticky, dan footer bergaya colophon.
+Frontend portfolio sudah memiliki tujuh section utama, tema Studio Cetak, navbar sticky, footer colophon, kertas Skills melayang, dan portrait asli. Stabilitas scroll sudah diperbaiki tanpa scroll hijacking. Docker multi-stage dan pipeline Jenkins disiapkan untuk distribusi image runtime berisi hasil build statis saja.
 
 Section yang sudah tersedia:
 
@@ -20,9 +20,18 @@ Section yang sudah tersedia:
 6. Skills
 7. Contact
 
-Foto portrait/project dan automated test suite permanen masih menjadi pekerjaan berikutnya. Form contact tetap menggunakan `mailto:`, bukan pengiriman melalui backend.
+Asset project dan automated test suite permanen masih menjadi pekerjaan berikutnya. Foto Hero dan tiga portrait About sudah tersedia. Form contact tetap menggunakan `mailto:`, bukan pengiriman melalui backend.
 
 ## Riwayat Release
+
+### v1.2.0 / 30 Oktober 2026
+
+- Tema Studio Cetak, navbar/footer responsif, dan kertas Skills melayang dengan pause/hold yang aksesibel.
+- Perbaikan rendering/scroll, judul yang selalu terbaca, dan pemisahan intent swipe horizontal dari scroll vertikal.
+- PNG asli Hero/About terhubung dengan crop setengah badan, titik fokus per pose, dan decoding gambar async.
+- Docker multi-stage dengan base image dipin digest; runtime Nginx non-root hanya membawa `dist/` dan konfigurasi web server.
+- Pipeline Jenkins build/smoke/archive, publish registry berdasarkan commit/build, dan deploy opsional lewat SSH menggunakan digest image serta pemeriksaan health/rollback.
+- Publish/deploy Jenkins nonaktif secara default sampai registry, kredensial, dan server dikonfigurasi. Belum ada klaim deploy ke server produksi.
 
 ### v1.1.0 / 29 Oktober 2026
 
@@ -56,6 +65,15 @@ Preview hasil build:
 ```bash
 npm run preview
 ```
+
+Build dan jalankan runtime Docker yang sama dengan CI:
+
+```bash
+docker build -t tajri-portfolio-web:local .
+docker compose up -d --wait
+```
+
+Alamat lokal: `http://127.0.0.1:8081`, terpisah dari port Jenkins 8080. Panduan Jenkins, registry, server SSH, reverse proxy/TLS, dan rollback ada di [DEPLOYMENT.md](DEPLOYMENT.md). Server tidak perlu clone repository, menginstal Node/npm, atau menyimpan `node_modules`.
 
 ## Stack Teknis
 
@@ -107,7 +125,7 @@ Hero menjadi poster portrait utama.
 
 Fitur:
 
-- Foto close-up Tajri di tengah.
+- Foto Tajri dengan crop sekitar setengah badan di tengah.
 - Marquee teks bergerak ke kiri dan kanan di belakang portrait.
 - Role di kiri atas.
 - Social links di kanan atas:
@@ -124,22 +142,26 @@ dibaca, dan dilanjutkan.
 
 - Paper grain.
 - Torn edge atas dan bawah.
-- Portrait fallback jika foto belum tersedia.
+- Portrait fallback jika foto gagal dimuat.
 - Reduced-motion support: marquee berhenti ketika `prefers-reduced-motion: reduce` aktif.
 
 Asset Hero:
 
 ```text
-public/assets/tajri-portrait.jpg
+public/assets/tajri-potrait-hero.png
 ```
 
 About portrait assets:
 
 ```text
-public/assets/about-portrait-builder.jpg
-public/assets/about-portrait-explainer.jpg
-public/assets/about-portrait-observer.jpg
+public/assets/tajri-potrait-builder.png
+public/assets/tajri-potrait-explainer.png
+public/assets/tajri-potrait-observer.png
 ```
+
+Keempat PNG asli berukuran 1024 x 1536 dan tidak diubah. Crop hanya dilakukan pada elemen gambar, bukan wrapper animasi atau ukuran frame: Hero memakai zoom 1.30 desktop / 1.24 mobile dengan fokus atas untuk menjaga kepala tetap utuh dan mengurangi bagian kaki. About memakai zoom 1.12 serta titik fokus horizontal per foto. Nuansa grayscale tetap dipertahankan, tetapi multiply dan reduksi brightness lama tidak diterapkan pada foto baru agar wajah tidak terlalu gelap.
+
+Hero memakai fetch priority tinggi dan async decoding; portrait About dimuat lazy dengan dimensi eksplisit agar pergantian foto tidak mengubah layout frame.
 
 About Me berganti otomatis setiap tiga detik saat terlihat dan tab browser aktif. Hover, fokus, atau pemilihan manual menjedakan slideshow sampai tombol Play ditekan. Autoplay dinonaktifkan saat reduced motion aktif.
 
@@ -430,10 +452,14 @@ Untuk form server-side di masa depan, gunakan:
 public/
 └── assets/
     ├── logo-inditech.png
-    └── logo-universitas-indonesia.png
+    ├── logo-universitas-indonesia.png
+    ├── tajri-potrait-hero.png
+    ├── tajri-potrait-builder.png
+    ├── tajri-potrait-explainer.png
+    └── tajri-potrait-observer.png
 ```
 
-Struktur di atas menunjukkan asset yang tersedia saat release `v1.1.0`. Foto Hero, tiga portrait About, dan gambar project belum tersedia; masing-masing memakai fallback. Path asset yang diharapkan tercantum pada section terkait.
+Struktur di atas menunjukkan asset lokal yang tersedia saat ini. Foto Hero dan About memakai nama file `potrait` sesuai unggahan asli. Gambar project belum tersedia dan tetap memakai fallback.
 
 ## Struktur Komponen
 
@@ -501,7 +527,8 @@ Pembagian tanggung jawab:
 ## Catatan Teknis dan Pekerjaan Berikutnya
 
 - Pastikan link Instagram dan GitHub diganti dengan URL asli.
-- Tambahkan foto Hero, tiga portrait About, dan asset project jika tersedia.
+- Tambahkan asset project jika tersedia.
+- Pertimbangkan versi WebP/AVIF portrait setelah komposisi foto disetujui, tanpa menimpa PNG asli.
 - Pertimbangkan self-hosting font untuk production.
 - Pertimbangkan mengganti logo skill eksternal dengan asset lokal untuk mengurangi ketergantungan CDN.
 - Tambahkan automated test suite permanen untuk interaksi dan regresi visual.
@@ -509,6 +536,14 @@ Pembagian tanggung jawab:
 - Pertimbangkan lazy-loading library yang tidak digunakan untuk mengurangi dependency bundle.
 
 ## Verifikasi Terakhir
+
+### Docker dan Jenkins
+
+Build Docker multi-stage release `1.2.0` berhasil dari `npm ci` sampai image Nginx. Runtime Compose healthy, non-root `101:101`, read-only dengan tmpfs, serta tidak membawa Node/npm/source aplikasi. Sembilan file statis berukuran sekitar 9 MiB; HTTP health/index, gzip, cache, SPA fallback, dan aset 404 diperiksa. Helper deploy dan shell Jenkins diuji dengan mock/syntax checks; job Jenkins nyata, push registry, dan server produksi masih menunggu konfigurasi tujuan. Detail ada di [DEPLOYMENT.md](DEPLOYMENT.md).
+
+### Portrait Hero dan About
+
+PNG Hero dan ketiga pose About diperiksa pada viewport 1440 x 1000, 390 x 844, 320 x 740, 820 x 1000, dan 844 x 430. Skenario mencakup keberhasilan decode/resolusi 1024 x 1536, headroom dan posisi wajah dalam crop, tidak ada request ke JPG lama, frame About tidak berubah ukuran saat berpindah pose, autoplay/manual selector, reduced motion, serta tidak ada horizontal overflow. Build produksi berhasil dan PNG asli tetap tidak diubah.
 
 ### Kertas Skill Melayang
 

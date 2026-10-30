@@ -124,8 +124,13 @@ export function HeroSection() {
           >
             {!portraitFailed && (
               <img
-                src="/assets/tajri-portrait.jpg"
-                alt="Close-up portrait of Tajri Mintahtihal Anhaar"
+                className="hero-portrait-image"
+                src="/assets/tajri-potrait-hero.png"
+                alt="Half-body portrait of Tajri Mintahtihal Anhaar"
+                width={1024}
+                height={1536}
+                fetchPriority="high"
+                decoding="async"
                 onError={() => setPortraitFailed(true)}
               />
             )}
