@@ -16,7 +16,7 @@ export const sectionLinks = [
 ] as const
 
 export const socialLinks = {
-  instagram: 'https://instagram.com',
+  instagram: 'https://www.instagram.com/tajri.anhaar',
   linkedin: 'https://linkedin.com/in/tajri-ma',
-  github: 'https://github.com',
+  github: 'https://github.com/tajreee',
 }
